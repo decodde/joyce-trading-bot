@@ -1,0 +1,24 @@
+{
+  "name": "great-light-trading-bot",
+  "version": "1.0.0",
+  "description": "trading bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fasina Oreoluwa",
+  "license": "MIT",
+  "dependencies": {
+    "@marcius-capital/binance-api": "^0.2.16",
+    "axios": "^0.21.1",
+    "binance-api-node": "^0.10.45",
+    "body-parser": "^1.19.0",
+    "candlestick": "0.0.3",
+    "ccxt": "^1.50.66",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.12.12",
+    "trading-indicator": "^1.0.4-beta",
+    "ws": "^7.4.6"
+  }
+}
