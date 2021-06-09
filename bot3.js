@@ -348,7 +348,7 @@ const _placeOrder = async (o, st) => {
 }
 
 const _placeOrderStopLoss = async (o, st) => {
-    const to_sign = `symbol=${o.symbol}&type=STOP&price=${o.price}&stopPrice=${o.stopLossPrice}&side=${o.side}&quantity=${o.quantity}&newClientOrderId=${o.newClientOrderId}&timestamp=${o.timestamp}`
+    const to_sign = `symbol=${o.symbol}&type=STOP&stopPrice=${o.stopLossPrice}&side=${o.side}&quantity=${o.quantity}&newClientOrderId=${o.newClientOrderId}&timestamp=${o.timestamp}`
 
     const hmac = crypto.createHmac('sha256', config.apiSecret)
         .update(to_sign)
@@ -373,7 +373,7 @@ const _placeOrderStopLoss = async (o, st) => {
 }
 
 const _placeOrderTakeProfit = async (o, st) => {
-    const to_sign = `symbol=${o.symbol}&type=TAKE_PROFIT&price=${o.price}&stopPrice=${o.takeProfitPrice}&side=${o.side}&quantity=${o.quantity}&newClientOrderId=${o.newClientOrderId}&timestamp=${o.timestamp}`
+    const to_sign = `symbol=${o.symbol}&type=TAKE_PROFIT&stopPrice=${o.takeProfitPrice}&side=${o.side}&quantity=${o.quantity}&newClientOrderId=${o.newClientOrderId}&timestamp=${o.timestamp}`
 
     const hmac = crypto.createHmac('sha256', config.apiSecret)
         .update(to_sign)
@@ -407,11 +407,11 @@ TAKE_PROFIT, TAKE_PROFIT_MARKET:
 */
 
 var testOrder = async (side,symbol,_customId,_currentClosePrice,takeProfitPrice,stopLossPrice) => {
-    //binance_ccxt.createOrder("BNB/USDT",'TRAILING_STOP_MARKET','buy',"0.6",false,params = {,callbackRate:0.65})
-    var _order = {
+    binance_ccxt.createOrder("BNB/USDT",'STOP_MARKET','buy',"0.6",false)
+    /*var _order = {
         symbol: symbol,
         side: side,
-        quantity: '12',
+        quantity: '1',
         type : 'MARKET',
         timestamp : Date.now(),
         price : _currentClosePrice,
@@ -424,6 +424,6 @@ var testOrder = async (side,symbol,_customId,_currentClosePrice,takeProfitPrice,
     var _order3 = await _placeOrderTakeProfit(_order);
     console.log("order1::  ",_order1);
     console.log("order2::  ",_order2);
-    console.log("order3::  ",_order3);
+    console.log("order3::  ",_order3);*/
 }
-strategy_one("XRPUSDT","43T2DS");
+strategy_one("BTCUSDT","43T2DS");
