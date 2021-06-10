@@ -1,0 +1,448 @@
+/*
+#gui-ne
+A css framework for sweet gooey neon themeniticity
+Author : Fasina Oreoluwa
+2020/24/11
+*/
+
+:root{
+    --default-card-padding : 20px;
+    --g : #2efbac;/*df theme color*/
+    --g-transp : #2efbac08;
+    --rc : #fb2e2e;/* default theme red color */
+    --yc : #f1fb2e;
+    --ff : 'Courier New', Courier, monospace;/*font family*/
+    --b :  rgb(10, 10, 10);
+    --w-transp :  rgba(92, 92, 92, 0.174);
+    --default-shadow : 1px 1px 30px -20px var(--g);
+    --shadow-1:  0px -1px 40px -20px var(--g);
+    --shadow-2:  7px 6px 10px -9px var(--g);
+    --red-shadow-2:  7px 6px 10px -9px var(--rc);
+    --yellow-shadow-2:  7px 6px 10px -9px var(--yc);
+    --default-padding : 5px;
+    --default-text-shadow: 0px 0px 6px var(--g);
+}
+.gui-ne-body{
+    background-color: black;
+    border-radius: 20px;
+    padding : 20px;
+}
+
+.gui-ne-hide{
+    display:none !important;
+}
+.gui-ne-show{
+    display:inherit !important;
+}
+
+
+/*
+//////////////////
+BUTTONS ---      /
+//////////////////
+*/
+.gui-ne-btn{
+    padding: var(--default-padding);
+    background-color: var(--b);
+    border : 1px solid var(--g);
+    color: white;
+    font-family: var(--ff);
+    box-shadow: var(--shadow-2);
+}
+
+
+.gui-ne-btn-stop{
+    padding: var(--default-padding);
+    background-color: var(--b);
+    border : 1px solid var(--g);
+    border-bottom : 2px solid var(--rc);
+    color: white;
+    font-family: var(--ff);
+    box-shadow: var(--red-shadow-2);
+}
+
+.gui-ne-btn-go{
+    padding: var(--default-padding);
+    background-color: var(--b);
+    border : 1px solid var(--g);
+    border-bottom : 2px solid var(--g);
+    color: white;
+    font-family: var(--ff);
+    box-shadow: var(--shadow-2);
+}
+
+.gui-ne-btn-wait{
+    padding: var(--default-padding);
+    background-color: var(--b);
+    border : 1px solid var(--g);
+    border-bottom : 2px solid var(--yc);
+    color: white;
+    font-family: var(--ff);
+    box-shadow: var(--yellow-shadow-2);
+}
+
+/*//////////////////////*/
+
+
+/*
+///////////////////
+LOADER ANIMATION ---
+///////////////////
+*/
+
+.gui-ne-anim-blink{
+    animation-duration: 0.8s;
+    animation-name: blink ;
+    animation-iteration-count: infinite;
+    animation-delay: 0.1s;
+    animation-fill-mode: backwards;
+}
+
+.gui-ne-anim-blink-delay-1{
+    animation-duration: 0.8s;
+    animation-name: blink ;
+    animation-iteration-count: infinite;
+    animation-delay: 0.2s;
+    animation-fill-mode: backwards;
+}
+
+.gui-ne-anim-blink-delay-2{
+    animation-duration: 0.8s;
+    animation-name: blink ;
+    animation-iteration-count: infinite;
+    animation-delay: 0.3s;
+    animation-fill-mode: backwards;
+}
+
+.gui-ne-anim-blink-delay-3{
+    animation-duration: 0.8s;
+    animation-name: blink ;
+    animation-iteration-count: infinite;
+    animation-delay: 0.4s;
+    animation-fill-mode: backwards;
+}
+
+.gui-ne-anim-blink-delay-4{
+    animation-duration: 0.8s;
+    animation-name: blink ;
+    animation-iteration-count: infinite;
+    animation-delay: 0.5s;
+    animation-fill-mode: backwards;
+}
+
+.gui-ne-anim-blink-delay-5{
+    animation-duration: 0.8s;
+    animation-name: blink ;
+    animation-iteration-count: infinite;
+    animation-delay: 0.6s;
+    animation-fill-mode: backwards;
+}
+
+@keyframes blink {
+    from {
+        opacity: 0.3;
+    }
+    to {
+        margin-left: 0%;
+        opacity: 1;
+    }
+}
+
+/*
+///////////////////
+LOADER ---
+///////////////////
+*/
+.gui-ne-loader-hold{
+    left:1%;
+    height:98%;
+    width:98%;
+    top:1%;
+    z-index:99;
+    position:absolute;
+    background-color: var(--b-transp);
+}
+
+.gui-ne-loader-container{
+    position:absolute;
+    text-align:center;
+    z-index:100;
+    left:50%;
+    top:50%;
+    padding: 10px;
+    transform:translate(-50%, -50%);
+    /*background-color: var(--b);
+    border-bottom: 1px solid var(--g);
+    /*box-shadow: 1px 1px 1000px -10px var(--g);*/
+}
+
+.gui-ne-loader-container-1{
+    position:absolute;
+    text-align:center;
+    z-index:100;
+    width : 20%;
+    left:50%;
+    top:50%;
+    padding: 10px;
+    transform:translate(-50%, -50%);
+    /*background-color: var(--b);
+    border-bottom: 1px solid var(--g);*/
+    box-shadow: 1px 1px 1000px -10px var(--g);
+}
+
+.gui-ne-loader{
+    display: inline-flex;
+    box-shadow: var(--shadow-1);
+    padding : var(--default-padding);
+    border-radius : 100% 1% 100% 0%;
+    width: 5%;
+    height : 5%;
+    background-color: var(--g);
+}
+
+.gui-ne-loader-circle{
+    border-radius: 400% 400% 200% 100%;
+    box-shadow: var(--shadow-1);
+    padding : var(--default-padding);
+    border : 3px dashed var(--g);
+}
+
+/*
+///////////////////
+CARDS ---         /
+///////////////////
+    --default --------
+/////////////////*/
+.gui-ne-card-df{
+    margin:5px;
+    padding : var(--default-card-padding);
+    background-color: rgb(10, 10, 10);
+    border-bottom-left-radius: 2px;
+    border-top-right-radius: 5px;
+    border: 0.5px solid var(--g);
+    /*box-shadow: 1px 1px 50px 1px rgba(129, 0, 235, 0.529);*/
+    box-shadow: var(--default-shadow);
+}
+
+.gui-ne-card-list{
+    margin:5px;
+    padding : var(--default-card-padding);
+    background-color: rgb(10, 10, 10); 
+    border-left : 1px dotted var(--g);
+    box-shadow: 1px 1px 9px -5px rgba(0, 235, 71, 0.529);
+}
+
+.gui-ne-card-btm{
+    margin:5px;
+    padding : var(--default-card-padding);
+    background-color: rgb(10, 10, 10); 
+    border-bottom : 1px solid var(--g);
+    box-shadow: 1px 1px 9px -5px rgba(0, 235, 71, 0.529);
+}
+
+/*/////////////////////////////
+///////////////////////////////*/
+
+/*
+//////////
+SELECT  /
+///////*/
+.gui-ne-select{
+    border:none;
+    color:white;
+    border-bottom : 1px solid var(--g);
+    font-family: var(--ff);
+    padding : 5px;
+    background-color: var(--b);
+    text-shadow: var(--default-text-shadow);
+    transition: all 0.2s ease-in;
+}
+.gui-ne-select>option{
+    border:none;
+    color:white;
+    border-bottom : 1px solid var(--g);
+    font-family: var(--ff);
+    padding : 5px;
+    background-color: var(--b);
+    
+    text-shadow: var(--default-text-shadow);
+    transition: all 0.2s ease-in;
+}
+
+.gui-ne-circle{
+    border-radius: 50%;
+}
+
+.gui-ne-circle-card{
+    padding:2%;
+    text-align: center;
+    background-color: var(--b);
+    border : 1px solid var(--g);
+    border-radius: 50%;
+    border-bottom: 50px solid var(--g);
+    box-shadow: var(--default-shadow);
+}
+
+.gui-ne-text{
+    font-family: var(--ff);
+    border-radius: 2px;
+    color: white;
+    padding:2px;
+    text-shadow :var(--default-text-shadow) ;
+}
+
+.gui-ne-text-bold{
+
+}
+
+.gui-ne-row {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px
+}
+
+.gui-ne-center{
+    position:relative;
+    left:50%;
+    transform:translate(-50%)
+}
+
+.gui-ne-pail-center{
+    position:absolute;
+    text-align:center;
+    left:50%;
+    top:50%;
+    transform:translate(-50%, -50%)
+}
+
+/*
+/////////
+IMAGES //
+/////////
+*/
+
+.gui-ne-img{
+    display: inline-block;
+    padding-left:2%;
+    padding-bottom: 1%;
+    background-color: var(--g);
+    border-radius: 80% 20% 75% 50% ;
+}
+
+.gui-ne-img-profile{
+    /*border-radius :20% 4% 18.75% 17.5% ;*/
+    transition : all 1s ease-in-out;
+    border: 1px solid var(--g);
+    box-shadow: var(--shadow-1);
+}
+
+.gui-ne-img-profile:hover{
+    /*border-radius :20% 4% 18.75% 17.5% ;*/
+    position: relative;
+    transition : all 1s ease-in-out;
+    bottom: 5px;
+    border: 1px solid var(--g);
+    box-shadow: var(--shadow-1);
+}
+
+/*/////////////////////////////////////*/
+
+
+/*
+/////////
+INPUT   /
+/////////
+*/
+.gui-ne-input{
+    border:none;
+    color:white;
+    border-left : 1px solid var(--g);
+    font-family: var(--ff);
+    padding : 5px;
+    background-color: var(--b);
+    box-shadow:  0px -1px 25px -11.8px var(--g) !important;
+    text-shadow: var(--default-text-shadow);
+    transition: all 0.2s ease-in;
+}
+.gui-ne-input:hover{
+    border:none;
+    border-left : .5px solid var(--g);
+    font-family: var(--ff);
+    padding : 8px;
+    background-color: var(--b);
+    box-shadow: var(--default-shadow);
+}
+.gui-ne-input:focus{
+    border:none;
+    border : 2px solid var(--g);
+    color : white;
+    font-family: var(--ff);
+    padding : 8px;
+    background-color: var(--b);
+    box-shadow: var(--shadow-1);
+    outline: none;
+}
+/*/////////////////////////*/
+
+
+/*
+////////////
+TABLULAR  //
+////////////
+*/
+
+.gui-ne-col,.gui-ne-col-1,.gui-ne-col-10,.gui-ne-col-11,.gui-ne-col-12,.gui-ne-col-2,.gui-ne-col-3,.gui-ne-col-4,.gui-ne-col-5,.gui-ne-col-6,.gui-ne-col-7,.gui-ne-col-8,.gui-ne-col-9,.gui-ne-col-auto {
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px
+}
+.gui-ne-col-1{
+    flex:0 0 8.33333333333%;
+    max-width:8.33333333333%
+}
+.gui-ne-col-2{
+    flex:0 0 16.66666666666%;
+    max-width:16.66666666666%
+}
+.gui-ne-col-3{
+    flex:0 0 25%;
+    max-width:25%
+}
+.gui-ne-col-4{
+    flex:0 0 33.33333333333%;
+    max-width:33.33333333333%
+}
+.gui-ne-col-5{
+    flex:0 0 41.6666666667%;
+    max-width:41.6666666667%
+}
+.gui-ne-col-6{
+    flex:0 0 50%;
+    max-width:50%
+}
+.gui-ne-col-7{
+    flex:0 0 58.33333333333%;
+    max-width:58.33333333333%
+}
+.gui-ne-col-8{
+    flex:0 0 66.66666666666%;
+    max-width:66.66666666666%
+}
+.gui-ne-col-9{
+    flex:0 0 75%;
+    max-width:75%
+}
+.gui-ne-col-10{
+    flex:0 0 83.33333333333%;
+    max-width:83.33333333333%
+}
+.gui-ne-col-12{
+    flex:0 0 100%;
+    max-width:100%
+}
+/*/////////////////////////////////////////*/

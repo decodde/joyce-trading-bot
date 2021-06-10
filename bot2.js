@@ -1,6 +1,7 @@
 const api = require('@marcius-capital/binance-api');
 const Binance = require("binance-api-node").default;
 
+
 const ccxt = require('ccxt');
 
 const {testConsole:test} = require("./testConsole");
@@ -21,10 +22,24 @@ const _indicator = require("technicalindicators");
 ////SECOND BINANCE*/
 const _Binance = require("node-binance-api");
 
-var __bConfig = {}
-__bConfig.APIKEY = config.apiKey;
-__bConfig.APISECRET = config.apiSecret;
-const _binance = new _Binance().options(__bConfig);
+const __api = require("binance");
+const binanceRest = new __api.BinanceRest({
+    key: config.apiKey, // Get this from your account on binance.com
+    secret: config.apiSecret, // Same for this
+    timeout: 15000, // Optional, defaults to 15000, is the request time out in milliseconds
+    recvWindow: 10000, // Optional, defaults to 5000, increase if you're getting timestamp errors
+    disableBeautification: false,
+    handleDrift: false,
+    /*
+     * Optional, default is false.  If turned on, the library will attempt to handle any drift of
+     * your clock on it's own.  If a request fails due to drift, it'll attempt a fix by requesting
+     * binance's server time, calculating the difference with your own clock, and then reattempting
+     * the request.
+     */
+    //baseUrl: config.url,
+    baseUrl: "https://fapi.binance.com/"
+});
+const binanceWS = new __api.BinanceWS(true);
 
 
 const fetch = require('node-fetch');
@@ -191,12 +206,23 @@ var getResistance = async (_df) => {
     }
 }
 var myIntervals = {};
+
+const userData = async () => {
+    console.log(".....")
+    binanceWS.onUserData(binanceRest,(d) => {
+        console.log("userData");
+        console.log(d)
+    })
+}
 const strategy = {
     oneStream : async (symbol,id) =>{
         
         return new Promise(async (resolve,reject) => {
             var _firstCandles = await getCandles(symbol);
             var lastCandles = _firstCandles.last3Candle;
+
+            await userData()
+
             api.stream.kline({symbol:symbol,interval:'1m'},async (data) => {
                 test.log(`final? : ${data.kline.final}`);    
                 _candle = data.kline;
@@ -230,17 +256,17 @@ const strategy = {
                     
                     console.log(`Bullish Engulfing found `)
                     console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`)
-                    console.log(supports.last_two);
+                    test.log(supports.last_two);
                     var stopLoss = supports.two_support_away.p;
                     var takeProfit = resistance.two_resistance_away.p;//tweaking needed
-                    console.log(`Two support points away:: ${supports.two_support_away.p}`);
-                    console.log(`Two resistance points away:: ${resistance.two_resistance_away.p}`);
+                    test.log(`Two support points away:: ${supports.two_support_away.p}`);
+                    test.log(`Two resistance points away:: ${resistance.two_resistance_away.p}`);
                     var _customId = await Misc.generateOrderId(id,symbol,last_two[1]['closeTime']);
                     var _stopPrice = resistance.last_two[1].p;
-                    console.log(`test stop_loss: ${_currentClosePrice}|${stopLoss} > `,_currentClosePrice >= stopLoss );
-                    console.log(`test take_profit:  ${_currentClosePrice}|${takeProfit} > `,_currentClosePrice <= takeProfit);
+                    test.log(`test stop_loss: ${_currentClosePrice}|${stopLoss} > `,_currentClosePrice >= stopLoss );
+                    test.log(`test take_profit:  ${_currentClosePrice}|${takeProfit} > `,_currentClosePrice <= takeProfit);
 
-                    console.log(_customId)
+                    test.log(_customId)
                     var newOrder = await testOrder('BUY',symbol,_customId,_currentClosePrice,takeProfit,stopLoss);
                     /*
                     var newOrder = await authClient.orderTest({
@@ -257,14 +283,14 @@ const strategy = {
                 else if (isBearE){
                     console.log(`Bearish Engulfing found`)
                     console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`)
-                    console.log(supports.last_two);
-                    console.log(`Two support points away:: ${supports.two_support_away}`);
+                    test.log(supports.last_two);
+                    test.log(`Two support points away:: ${supports.two_support_away}`);
                     var _customId = await Misc.generateOrderId(id,symbol,last_two[1]['closeTime']);
                     var stopLoss = supports.two_support_away.p;
                     var takeProfit = resistance.two_resistance_away.p;
-                    console.log(_customId)
-                    console.log(`sell_test stop_loss: ${_currentClosePrice}|${stopLoss} >> `,_currentClosePrice <= stopLoss );
-                    console.log(`sell_test take_profit:  ${_currentClosePrice}|${takeProfit} >> `,_currentClosePrice >= takeProfit);
+                    test.log(_customId)
+                    test.log(`sell_test stop_loss: ${_currentClosePrice}|${stopLoss} >> `,_currentClosePrice <= stopLoss );
+                    test.log(`sell_test take_profit:  ${_currentClosePrice}|${takeProfit} >> `,_currentClosePrice >= takeProfit);
                     var newOrder = await testOrder('SELL',symbol,_customId,_currentClosePrice,takeProfit,stopLoss);
                     /*
                     var newOrder = await authClient.orderTest({
