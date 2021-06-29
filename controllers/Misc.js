@@ -1,17 +1,17 @@
 const Misc = {
     generateOrderId : async (id,symbol,t,num) => {
         t ? t = t : t = new Date().getUTCMilliseconds();
-        var strat = "rx";
-        if (num == 1) {
+        var strat = "strat";
+        if (num) {
             strat = `${strat}One`;
         }
-        else if (num == 2) {
+        else if (num) {
             strat = `${strat}Two`;
         }
         else {
             strat = `${strat}Three`
         }
-        return `${strat}_${id}_${t}`;
+        return `rocket125x_${id}_${symbol}_${strat}_${t}`;
     }
 }
 

@@ -1,27 +1,28 @@
 include top 
-body.h-bg-pinkish
+body
     .h-pail-center
-        form#loginForm.h-card.h-shadow-pinkish.h-bg-white.h-text(action="/login",method="POST")
+        .h-card.h-pail-center(style="z-index:2")
+            p igoewn
+        form#loginForm.h-card.h-shadow-pinkish.h-bg-pinkish.h-text(action="/login",method="POST",style="z-index:9;border-radius: 10px 10px 60% 10px;")
             br
-            h4.h-text-pinkish Great Light
-            br
-            br
+            h4.h-text-white Great Light
             div
                 i.h-text.h-text-red#errorMessage #{message}
             br
-            div
-                span.h-text-bold @email
-                input#email.h-input.h-text.h-outline-pinkish(name="email",type="text")
-            div
-                span.h-text-bold.h-text-lightblue @password
-                input#password.h-input.h-text.h-outline-pinkish(name="password",type="password")
-            br
-            button.h-button.h-text.h-bg-pinkish.h-text-white Login
+            div.h-card-sm
+                div
+                    p.h-text @email
+                    input#email.h-input.h-text.h-outline-pinkish(name="email",type="text")
+                div
+                    p.h-text.h-text-lightblue @password
+                    input#password.h-input.h-text.h-outline-pinkish(name="password",type="password")
+                br
+                button.h-button.h-text.h-bg-pinkish.h-text-white Login
             br
             br 
             br
             a.h-text.h-text-pinkish(href="/onboard")
-                i i am new here
+                i.h-font-sm i am new here
             br
             br
 

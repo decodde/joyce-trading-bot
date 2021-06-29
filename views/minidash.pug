@@ -1,0 +1,60 @@
+include top 
+    .h-pail-center.h-card.h-bg-black
+        h1.h-text-pinkish.h-text Rocket 125x mini
+        br
+        div
+            .row.h-bg-white.h-card-sm.h-padding-1
+                div.h-col-3.h-bg-white.h-card-sm
+                    button.h-button.h-text.h-bg-lightblue.h-text-white.h-card-1.h-font-tiny-2(onclick="switchTo('1')") Set Keys
+                    br
+                    br
+                    button.h-button.h-text.h-card-1.h-text-white.h-bg-lightblue.h-font-tiny-2(onclick = "switchTo('2')") Start Bot
+                    br
+                    br
+                    button.h-button.h-text.h-card-1.h-text-white.h-bg-red.h-font-tiny-2(onclick = "switchTo('3')") Stop Bot
+                .h-col-8.h-card-sm
+                    div.h-dash-left(style="padding-left : 5px")
+                        form#binanceKeys.view.h-anim-rollin.h-hide(action="POST")
+                            h5.h-text-bold.h-margin-0 Set your binance keys
+                            br
+                            div.h-margin-1
+                                p.h-margin-0.h-text.h-text-pinkish.h-text-left apiKey
+                                if data.binanceApiKey
+                                    input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922", disabled ,value = `${data.binanceApiKey}`)
+                                else
+                                    input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922" )
+                            div.h-margin-1
+                                p.h-margin-0.h-text.h-text-pinkish.h-text-left apiSecret
+                                if data.binanceApiSecret
+                                    input.h-input.h-text.h-margin-0#apiSecret(type="text",name="apiSecret",placeholder="apiSecret", disabled ,value = `${data.binanceApiSecret}`)
+                                else 
+                                    input.h-input.h-text.h-margin-0#apiSecret(type="text",name="apiSecret",placeholder="apiSecret")
+                            br
+                            button.h-button.h-bg-lightgreen.h-text-white.h-text-bold Submit
+
+                        form#startBot.view.h-anim-rollin.h-hide(action="POST")
+                            h5.h-text-bold.h-margin-0 Bot Config 
+                            br
+                            .h-margin-1.h-text-left
+                                span.h-font-tiny-2.h-text.h-text-purple Bot status 
+                                span.h-bg-pinkish.h-text-bold.h-font-tiny-2
+                                    i idle
+                            .h-margin-1 
+                                p.h-margin-0.h-text.h-text-lightgreen.h-text-left Select Strategy
+                                select#strategy.h-input.h-outline-lightgreen(name="strategy") 
+                                    option(value="1") strategy_one
+                            .h-margin-1 
+                                p.h-margin-0.h-text.h-text-lightblue.h-text-left Select symbol
+                                select#symbol.h-input.h-outline-lightblue(name="symbol") 
+                                    option(value="BNBUSDT") BNB/USDT
+                                    option(value="ETHUSDT") ETH/USDT
+                            .h-margin-1 
+                                span.h-margin-0.h-text.h-text-lightblue.h-left Quantity
+                                span.h-right.h-font-tiny.h-text-red 0.000
+                                input.h-input#quantity(type="number",name='quantity')
+                            button.h-button.h-bg-lightgreen.h-shadow-lightgreen.h-text-white.h-text-bold Start Bot
+
+                        div#stopBot.view.h-hide
+                            h5.h-text-bold.h-margin-0.h-text-red Are you sure you want to stop the bot?
+                            button.h-button.h-bg-red.h-text-white.h-text-bold(onclick="stopBot()") STOP
+script(type="text/javascript",src='/js/mini.js')

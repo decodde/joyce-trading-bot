@@ -8,7 +8,12 @@ const Constants = {
     DELETE_SUCCESS : "Delete success",
     DELETE_FAILED : "Delete failed",
     EMAIL_EXISTS : "Account already exists",
-    DB_ERROR : "Something wrong from our end"
+    DB_ERROR : "Something wrong from our end",
+    API_KEY_NOT_EXIST : "Apikey/Api secret not set",
+    API_KEY_INVALID : "Apikey is invalid",
+    KEY_EMPTY : "Key fields are empty",
+    API_KEY_SUCCESS : "Binance keys submitted successfully",
+    API_KEY_FAIL : "Binance keys failed to submit"
 }
 
 exports.Constants = Constants;

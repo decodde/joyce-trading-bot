@@ -21,7 +21,9 @@ const RouteControl = {
             res.render('signup');
         },
         dashboard : async (req,res) => {
-            res.render('dashboard')
+            //console.log(req.session.user);
+            var orders =  await Brain.user.myOrders({email : req.session.user.email});
+            res.render('dashboard',{user : req.session.user,orders : orders});
         }
     },
     login : async (req,res) => {
@@ -59,18 +61,33 @@ const RouteControl = {
             res.render("signup", { message: trySignup.msg });
         }
     },
+    miniDash : async (req,res) => {
+        var user = req.session.user;
+        res.render("minidash",{data : user});
+    },
     status : async (req,res) => {
 
     },
     getOrder : async (req,res) => {
 
     },
+    myOrders : async (req,res) => {
+
+    },
     cancelOrder : async (req,res) => {
 
     },
     botOrder : async (req,res) => {
-
+        let user = req.session.user;
+        var a = await Brain.user.botOrder(user,req.body);
+        res.json(a);
     },
+    submitKeys : async (req,res) => {
+        var user = req.session.user;
+        var {email} = user;
+        var submit = await Brain.user.submitKeys(email,req.body);
+        res.json(submit);
+    }
 
 }
 

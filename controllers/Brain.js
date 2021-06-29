@@ -4,6 +4,9 @@ var mongoose = require('mongoose');
 const crypt=require("crypto");
 const { Constants } = require("./misc/Constants");
 const { Misc } = require("./misc/Misc");
+const Binance = require("binance-api-node").default;
+const client = Binance();
+
 
 var mongodbURL = "";
 if (process.env.mode == 'production') {
@@ -74,6 +77,22 @@ const Brain = {
             return false
         }
     },
+    getOrder : async (id) => {
+        try{
+            var _req = await Order.findOne({customId : id});
+            console.log("id: ",id);
+            if (_req == null){
+                return Response.error(Constants.DATA_EMPTY);
+            }
+            else {
+                return Response.success(Constants.DATA_RETRIEVE_SUCCESS,{order : _req})
+            }
+        }
+        catch(e){
+            console.log(e)
+            return Response.error()
+        }
+    },
     checkOrder : async (symbol,price) => {
         console.log(symbol)
         price = price.toString()
@@ -100,6 +119,85 @@ const Brain = {
                 return Response.success(Constants.DATA_RETRIEVE_SUCCESS,keys);
             }
         },
+        myOrders : async (data) => {
+            var {email} = data;
+            console.log(email);
+            try{
+                var _req = await Order.find({by : email});
+                //console.log(_req);
+                return Response.success(Constants.DATA_RETRIEVE_SUCCESS,_req);
+            }
+            catch(e){
+                console.log(e);
+                return Response.error(Constants.DB_ERROR);
+            }            
+        },
+        botOrder : async (user,data) => {
+            var {strategy,quantity,symbol} = data;
+            var {binanceApiSecret,binanceApiKey,email} = user;
+            if (binanceApiKey && binanceApiSecret){
+                let _bConfig = {
+                    apiKey: binanceApiKey,
+                    apiSecret: binanceApiSecret,
+                    httpFutures: true,
+                }
+                try{
+                    let authClient = Binance(_bConfig);
+                    let exchangeInfo = await authClient.futuresExchangeInfo();
+                    console.log(authInfo);
+
+                }
+                catch(e){
+                    console.log(e);
+                    return Response.error();
+                }
+            }
+            else{
+                return Response.error(Constants.API_KEY_NOT_EXIST);
+            }
+        },
+        submitKeys : async (email,data) => {
+            var {apiKey,apiSecret} = data;
+            let _bConfig = {
+                apiKey: apiKey,
+                apiSecret: apiSecret,
+                httpFutures: true,
+            }
+            if (apiSecret && apiKey){
+                try{
+                    let authClient = Binance(_bConfig);
+                    let authInfo = await authClient.futuresAccountInfo();
+                    console.log('authIauthInfo> ',Object.keys(authInfo));
+                    var _data = { 
+                        availableBalance : authInfo.availableBalance,
+                        totalWalletBalance : authInfo.totalWalletBalance
+                    }
+                    try{    
+                        var saveKeys = await User.updateOne({email, email},{$set : {binanceApiKey : apiKey, binanceApiSecret : apiSecret}});
+                        if (saveKeys.nModified == 1){
+                            return Response.success(Constants.API_KEY_SUCCESS,_data);
+                        }
+                        else{
+                            return Response.error(Constants.API_KEY_FAIL);
+                        }
+                    }
+                    catch(e){
+                        console.log(e);
+                        return Response.error(Constants.DB_ERROR);
+                    }                
+                }
+                catch(e){
+                    console.log(e.code);
+                    if (e.code == -2014){
+                        console.log('2014')
+                    }
+                    return Response.error(Constants.API_KEY_INVALID);
+                }
+            }
+            else {
+                return Response.error(Constants.KEY_EMPTY);
+            }    
+        }
     }
 
 }

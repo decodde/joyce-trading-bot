@@ -169,8 +169,8 @@ h1,h2,h3,h4,h5{
 ////////////////////////*/
 .h-dash-left{
     border-left-style:dashed;
-    border-left-width: 5px;
-    border-left-color:oldlace
+    border-left-width: 3px;
+    border-left-color:rgb(170, 162, 146)
 }
 .h-dash-right{
     border-right-style:dashed;
@@ -841,6 +841,21 @@ cardet:focus{
 .h-card-1{
     padding:5px !important;
     border-radius:5px !important
+}
+.h-padding-0{
+    padding:0px !important;
+    padding-top: 0px !important;
+    padding-bottom:0px !important;
+}
+.h-padding-1{
+    padding:5px !important;
+    padding-top: 5px !important;
+    padding-bottom:5px !important;
+}
+.h-margin-0{
+    margin:0px !important;
+    margin-top: 0px !important;
+    margin-bottom:0px !important;
 }
 .h-margin-1{
     margin:5px !important;

@@ -36,12 +36,14 @@ app.get("/login", RouteControl.page.login);
 app.get("/onboard", RouteControl.page.onboard)
 app.get("/order/:orderId", RouteControl.auth ,RouteControl.getOrder);
 app.get("/dashboard", RouteControl.auth, RouteControl.page.dashboard);
+app.get("/mini", RouteControl.auth, RouteControl.miniDash)
 
-
+app.post("/myOrders", RouteControl.auth, RouteControl.myOrders);
+app.post("/submitKeys", RouteControl.auth, RouteControl.submitKeys);
 app.post("/login", RouteControl.login);
 app.post("/onboard", RouteControl.onboard);
 app.post("/cancelOrder/:orderId", RouteControl.cancelOrder);
-app.post("/botOrder/:symbol/:quantity/:price", RouteControl.botOrder);
+app.post("/botOrder", RouteControl.auth, RouteControl.botOrder);
 
 
 

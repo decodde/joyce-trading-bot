@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var order = new Schema({
-  id:{type: String},
+  customId:{type: String},
   symbol:{type:String},
   done : {type : Boolean},
   by : {type: String},

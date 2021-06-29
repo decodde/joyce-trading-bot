@@ -1,5 +1,5 @@
 include top 
-body 
+body.h-bg-dark
     .h-card.h-pail 
         .h-card-sm.h-bg-white 
             div 
@@ -11,4 +11,14 @@ body
 
         .h-card.h-bg-white 
             h5.h-text.h-text-pinkish Your Bot Orders
-            
+            div.row
+                for order in orders.data
+                    span.h-card-sm.h-text-white.h-shadow-white.h-col-3.h-outline-black
+                        p.h-text-bold.h-text-black #{order.symbol}
+                        p.h-text.h-text-black Bought @ #{order.price}
+                        p.h-text-red.h-text S/L: #{order.stopLossPrice ? order.stopLossPrice : "None"}
+                        p.h-text-red.h-text T/P: #{order.takeProfitPrice ? order.takeProfitPrice : 'None'}
+                        p.
+                    br
+
+
