@@ -13,7 +13,7 @@ const config = {
     testWs : "wss://testnet.binance.vision/ws" ,
     testApiKey : "0bac0f08605f8bde64f40fba2b582378084b7b678713ea58510f458307f1edec",
     testApiSecret : "d9a66ed003b6b36020c9c33c0cf511d33a4ea2af1c3969b05b201306ded72ab9",
-    tpslTweak : 0.30
+    tpslTweak : 1
 }
 //console.log(process.env.API_KEY)
 exports.config = config;

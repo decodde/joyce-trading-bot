@@ -258,7 +258,7 @@ const strategy = {
         var signalFound = false;
         
         authClient.ws.futuresUser(async(x)=>{
-            var {symbol,eventType,orderStatus,clientOrderId,orderType,executionType,realizedProfit} =x;
+            var {symbol,eventType,orderStatus,clientOrderId,orderType,executionType,realizedProfit,positionSide} =x;
             if (eventType == 'ORDER_TRADE_UPDATE'){
                 console.log(x);
                 if(orderStatus == 'FILLED' && orderType == 'MARKET' && executionType == 'TRADE' && realizedProfit == '0' ){
@@ -283,8 +283,9 @@ const strategy = {
                         side:  _side,
                         quantity: quantity,
                         type: 'TRAILING_STOP_MARKET',
+                        positionSide : positionSide,
                         price : priceLastTrade,
-                        callbackRate : '0.6',
+                        callbackRate : '0.1',
                         newClientOrderId: customId + 'ts'
                     });
                     test.log(tsOrder);
@@ -368,6 +369,7 @@ const strategy = {
                 if (isBullE) {
                     //BUY POSITION
                     var _side = 'BUY';
+                    var _positionSide = 'LONG';
                     if (signalFound == false) {
 
                         console.log(`Bullish Engulfing found `)
@@ -398,7 +400,8 @@ const strategy = {
                             quantity: quantity,
                             customId : _customId,
                             takeProfitPrice : takeProfit,
-                            stopLossPrice : stopLoss
+                            stopLossPrice : stopLoss,
+                            positionSide : _positionSide
                         }
                         await Brain.saveOrder(_order);
                         var newOrder = await authClient.order({
@@ -406,7 +409,8 @@ const strategy = {
                             side: _side,
                             quantity: quantity,
                             type: 'MARKET',
-                            newClientOrderId: _customId
+                            newClientOrderId: _customId,
+                            positionSide : _positionSide
                         });
                         
                     }
@@ -414,6 +418,7 @@ const strategy = {
                 else if (isBearE) {
                     if (signalFound == false) {
                         var _side = 'SELL';
+                        var _positionSide = 'SHORT'
                         console.log(`Bearish Engulfing found`)
                         console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`)
                         console.log(supports.last_two);
@@ -438,7 +443,8 @@ const strategy = {
                             quantity: quantity,
                             customId: _customId,
                             takeProfitPrice : takeProfit,
-                            stopLossPrice : stopLoss
+                            stopLossPrice : stopLoss,
+                            positionSide : _positionSide
                         }
                         await Brain.saveOrder(_order);
                         var newOrder = await authClient.order({
@@ -446,8 +452,9 @@ const strategy = {
                             side: _side,
                             quantity: quantity,
                             type: 'TRAILING_STOP_MARKET',
-                            callbackRate : '0.6',
-                            newClientOrderId: _customId
+                            callbackRate : '0.1',
+                            newClientOrderId: _customId,
+                            positionSide : _positionSide
                         });
                         console.log(newOrder);
                     }
