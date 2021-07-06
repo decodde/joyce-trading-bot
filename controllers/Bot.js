@@ -4,16 +4,9 @@ const Binance = require("binance-api-node").default;
 const ema = require('trading-indicator').ema
 const alerts = require('trading-indicator').alerts;
 
-const { testConsole: test } = require("./testConsole");
+const { testConsole: test } = require("../testConsole");
 const client = Binance();
-const { config } = require("./config");
-
-
-
-
-const { Misc } = require("./Misc");
-
-const { Brain } = require("./Brain");
+const { config } = require("../config");
 
 
 var getCandles = async (symbol) => {
@@ -27,7 +20,6 @@ var getCandles = async (symbol) => {
 }
 
 const _candlestick = {
-
     formatCandles: async (candles) => {
         if (candles.constructor.name.toLowerCase() == "array") {
             let _candles = {};
@@ -154,125 +146,120 @@ var getResistance = async (_df) => {
     }
 }
 
-var calculateTpSl = async (side,supports,resistance,price) => {
-    console.log("price : ",price);
-    if (side == 'BUY'){
-        var tp_a = resistance.resistance.reverse().find(o => o['p'] > price);
-        tp_a = tp_a ? Number(tp_a.p) : Number(price) + Number(config.tpslTweak);
-        console.log(tp_a);
-        console.log('ctpsl> ',tp_a );
-        var real_tp = tp_a;
-        var sl_a = supports.two_support_away.p;
-        (sl_a > price) ? sl_a = supports.supports.reverse().find(o => o['p'] < price).p : sl_a;
-        var real_sl = Number(sl_a);
+var calculateTpSl = async (side, supports, resistance, price) => {
+    console.log("price : ", price);
+    price = Number(price);
+    if (side == 'BUY') {
+        var takeProfit_A = resistance.resistance.reverse().find(o => Number(o['p']) > price);
+
+        if (takeProfit_A > price) {
+            takeProfit_A = Number(takeProfit_A.p)
+        }
+        else {
+            console.log('Using TakeProfit Tweak');
+            takeProfit_A = Number(price) + Number(config.tpslTweak);
+        }
+
+        console.log('TakeProfit Set At: : ,', takeProfit_A);
+
+        var real_tp = takeProfit_A;
+        var stopLoss_A = supports.two_support_away.p;
+
+        if (stopLoss_A > price) {
+
+            stopLoss_A = supports.supports.reverse().find(o => Number(o['p']) < price).p;
+        }
+        else {
+            console.log('StopLoss b4 Tweak:  ', stopLoss_A);
+            console.log('Using StopLoss Tweak');
+            stopLoss_A = Number(price) - Number(config.tpslTweak);
+        }
+        var real_sl = Number(stopLoss_A);
+        console.log('StopLoss Set At: : , ', stopLoss_A);
         return {
-            tp : real_tp,
-            sl : real_sl
+            tp: real_tp,
+            sl: real_sl
+        }
+
+    }
+    else if (side == 'SELL') {
+        var takeProfit_A = supports.supports.reverse().find(o => Number(o['p']) < price);
+
+        if (takeProfit_A < price) {
+            takeProfit_A = Number(takeProfit_A.p)
+        }
+        else {
+            console.log('Using takeProfit Tweak');
+            takeProfit_A = Number(price) - Number(config.tpslTweak);
+        }
+
+        console.log('TakeProfit Set At: :  ', takeProfit_A);
+        var real_tp = takeProfit_A;
+        var stopLoss_A = resistance.two_resistance_away.p;
+
+        if (stopLoss_A > price) {
+            stopLoss_A = resistance.resistance.reverse().find(o => Number(o['p']) > price).p
+        }
+        else {
+            console.log('StopLoss b4 Tweak:  ', stopLoss_A);
+            console.log('Using StopLoss Tweak');
+            stopLoss_A = Number(price) + Number(config.tpslTweak);
+        }
+        var real_sl = Number(stopLoss_A);
+        console.log('StopLoss Set At: :  ', stopLoss_A);
+        return {
+            tp: real_tp,
+            sl: real_sl
         }
     }
-    else if (side == 'SELL'){
-        var tp_a = supports.supports.reverse().find(o => o['p'] < price);
-        tp_a = tp_a ? Number(tp_a.p) : Number(price) + Number(config.tpslTweak);
-        
-        console.log('ctpsl> ',tp_a);
-        var real_tp = tp_a;
-        var sl_a = resistance.two_resistance_away.p;
-        (sl_a < price) ? sl_a = resistance.resistance.reverse().find(o => o['p'] < price).p : sl_a;
-        var real_sl = Number(sl_a);
-        return {
-            tp : real_tp,
-            sl : real_sl
-        }
-    }
-    
-    
+
 }
 
-
 const strategy = {
-    oneStream: async (symbol, id, quantity) => {
+    oneStream: async (authClient,symbol, id, quantity) => {
         var signalFound = false;
-        authClient.ws.futuresUser(async(x)=>{
-            var {symbol,eventType,orderStatus,clientOrderId,orderType,executionType,realizedProfit} =x;
-            if (eventType == 'ORDER_TRADE_UPDATE'){
-                console.log(x);
-                var isStrategyOne = orderStatus.includes('stratOne');
-                if(orderStatus == 'FILLED' && orderType == 'MARKET' && executionType == 'TRADE' && realizedProfit == '0' && isStrategyOne ){
+        var botStatus = (await Brain.user.botStatus(id)).data.status;
+        authClient.ws.futuresUser(async (x) => {
+            var { symbol, eventType, orderStatus, clientOrderId, orderType, executionType, realizedProfit, positionSide } = x;
+            if (eventType == 'ORDER_TRADE_UPDATE') {
+                test.log(x);
+                var botStatus = (await Brain.user.botStatus(id)).data.status;
+                console.log(botStatus);
+                var isStrategyOne = clientOrderId.includes('rxOne');
+                if (orderStatus == 'FILLED' && orderType == 'MARKET' && executionType == 'TRADE' && realizedProfit == '0' && isStrategyOne && botStatus == true) {
                     test.log("================================================================");
-                    test.log('x:: ',x,'\n _____________________');
-                    test.log(orderStatus," |X| ",orderType);
-                    var _side , takeProfit, stopLoss;
+                    test.log('x:: ', x, '\n _____________________');
+                    test.log(orderStatus, " |X| ", orderType);
+                    var _side;
                     var _orderInfo = await Brain.getOrder(clientOrderId);
-                    test.log("Corresponding info ::>> ",_orderInfo);
+                    test.log("Corresponding info ::>> ", _orderInfo);
                     var priceLastTrade = x.priceLastTrade;
-                    var {side,stopLossPrice, takeProfitPrice, customId, quantity} = _orderInfo.data.order;
-                    test.log(takeProfitPrice);
-                    test.log("priceLast> ",x.priceLastTrade);
-                   
-                    if(side == 'BUY'){
+                    var { side, customId, quantity } = _orderInfo.data.order;
+                    test.log("priceLast> ", x.priceLastTrade);
+
+                    if (side == 'BUY') {
                         _side = 'SELL';
                     }
-                    else{
+                    else {
                         _side = 'BUY';
                     }
-                    takeProfit = takeProfitPrice;
-                    stopLoss = stopLossPrice;
-                    console.log("priceLast> ",x.priceLastTrade,' :sl: ',stopLoss,' :tp: ',takeProfit);
-                    var tpOrder = await authClient.order({
+                    var tsOrder = await authClient.order({
                         symbol: symbol,
                         side:  _side,
                         quantity: quantity,
-                        type: 'TAKE_PROFIT',
+                        type: 'TRAILING_STOP_MARKET',
+                        positionSide : positionSide,
                         price : priceLastTrade,
-                        stopPrice: takeProfit,
-                        newClientOrderId: customId + 'tp'
+                        callbackRate : '0.3',
+                        newClientOrderId: customId + 'ts'
                     });
-                    var slOrder = await authClient.order({
-                        symbol: symbol,
-                        side: _side,
-                        quantity: quantity,
-                        type: 'STOP',
-                        price : priceLastTrade,
-                        stopPrice: stopLoss,
-                        newClientOrderId: customId + 'sl'
-                    });
-                    test.log(tpOrder);
-                    test.log(slOrder);
-                }
-                if(executionType == 'EXPIRED'){
-                    var {symbol,orderType,clientOrderId} = x;
-                    if(orderType == 'TAKE_PROFIT'){
-                        var cl_id = clientOrderId.split("tp")[0];
-                        console.log(cl_id);
-                        var sl_id = `${cl_id}sl`;
-                        console.log(sl_id)
-                        var cancel = await authClient.futuresCancelOrder({
-                            symbol : symbol,
-                            origClientOrderId : sl_id
-                        })
-                        console.log(cancel);
-                    }
-                    else if (orderType == 'STOP'){
-                        var cl_id = clientOrderId.split("sl")[0];
-                        console.log(cl_id);
-                        var tp_id = `${cl_id}tp`;
-                        console.log(tp_id)
-                        var cancel = await authClient.futuresCancelOrder({
-                            symbol : symbol,
-                            origClientOrderId : tp_id
-                        })
-                        console.log(cancel);
-                    }
-                    else {
-                        console.log("-_-")
-                    }
                 }
             }
         })
         return new Promise(async (resolve, reject) => {
             var _firstCandles = await getCandles(symbol);
             var lastCandles = _firstCandles.last3Candle;
-            
+
             api.stream.kline({ symbol: symbol, interval: '1m' }, async (data) => {
                 test.log(`final? : ${data.kline.final}`);
                 //await cancelExistingOrder(symbol,data.kline.close);
@@ -292,6 +279,7 @@ const strategy = {
                         lastCandles.shift();
                     }
                     lastCandles.push(_candle);
+                    botStatus = (await Brain.user.botStatus(id)).data.status;
                     signalFound = false;
                 }
                 let last_two = lastCandles.slice(-2,);
@@ -305,40 +293,30 @@ const strategy = {
                 var _currentClosePrice = Number(data.kline.close).toFixed(3);
                 test.log(isBullE, " : ", isBearE);
 
-                if (isBullE) {
+                /*qUANTITY*/
+                quantity = (_currentClosePrice / quantity);
+                console.log(quantity);
+                if (isBullE && botStatus == true) {
                     //BUY POSITION
                     var _side = 'BUY';
+                    var _positionSide = 'LONG';
                     if (signalFound == false) {
 
                         console.log(`Bullish Engulfing found `)
-                        console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`)
-                        console.log(supports.last_two);
+                        console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`);
                         
-                        var c = await calculateTpSl(_side,supports,resistance,_currentClosePrice);
-                        var {tp,sl} = c;
-                        takeProfit = tp;
-                        stopLoss = sl;
+                        var _customId = await Brain.generateOrderId(id, symbol, last_two[1]['closeTime'], 1);
 
-                        console.log(`test stop_loss: ${_currentClosePrice}|${stopLoss} > `, _currentClosePrice >= stopLoss);
-                        console.log(`test take_profit:  ${_currentClosePrice}|${takeProfit} > `, _currentClosePrice <= takeProfit);
-                        //check if takeProfit and stopLoss situable ; if not get another
-                        //(_currentClosePrice >= stopLoss) ? "" : stopLoss = await getStopLoss(supports.supports,_currentClosePrice,stopLoss);
-
-                        console.log(`Two support points away:: ${supports.two_support_away.p}`);
-                        console.log(`Two resistance points away:: ${resistance}`);
-
-                        var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'],1);
-
-                        console.log(_customId);
+                        test.log(_customId);
 
                         signalFound = true;
                         var _order = {
                             symbol: symbol,
                             side: _side,
                             quantity: quantity,
-                            customId : _customId,
-                            takeProfitPrice : takeProfit,
-                            stopLossPrice : stopLoss
+                            customId: _customId,
+                            by : id,
+                            positionSide: _positionSide
                         }
                         await Brain.saveOrder(_order);
                         var newOrder = await authClient.order({
@@ -346,30 +324,22 @@ const strategy = {
                             side: _side,
                             quantity: quantity,
                             type: 'MARKET',
-                            newClientOrderId: _customId
+                            newClientOrderId: _customId,
+                            positionSide: _positionSide
                         });
-                        
                     }
                 }
-                else if (isBearE) {
+                else if (isBearE && botStatus == true) {
                     if (signalFound == false) {
                         var _side = 'SELL';
+                        var _positionSide = 'SHORT'
                         console.log(`Bearish Engulfing found`)
-                        console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`)
-                        console.log(supports.last_two);
-                        console.log(`Two resistance points away::`, resistance.two_resistance_away);
-                        var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime']);
-                        
-                        
-                        var c = await calculateTpSl(_side,supports,resistance,_currentClosePrice);
-                        var {tp,sl} = c;
-                        takeProfit = tp;
-                        stopLoss = sl;
+                        console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`);
 
-                        console.log(_customId)
-                        console.log(`sell_test stop_loss: ${_currentClosePrice}|${stopLoss} >> `, _currentClosePrice <= stopLoss);
-                        console.log(`sell_test take_profit:  ${_currentClosePrice}|${takeProfit} >> `, _currentClosePrice >= takeProfit);
-                        // var newOrder = await testOrder('SELL',symbol,_customId,_currentClosePrice,takeProfit,stopLoss);
+                        var _customId = await Brain.generateOrderId(id, symbol, last_two[1]['closeTime'], 1);
+
+                        test.log(_customId);
+
                         signalFound = true;
 
                         var _order = {
@@ -377,8 +347,8 @@ const strategy = {
                             side: _side,
                             quantity: quantity,
                             customId: _customId,
-                            takeProfitPrice : takeProfit,
-                            stopLossPrice : stopLoss
+                            by : id,
+                            positionSide: _positionSide
                         }
                         await Brain.saveOrder(_order);
                         var newOrder = await authClient.order({
@@ -386,9 +356,9 @@ const strategy = {
                             side: _side,
                             quantity: quantity,
                             type: 'MARKET',
-                            newClientOrderId: _customId
+                            newClientOrderId: _customId,
+                            positionSide: _positionSide
                         });
-                        //console.log(newOrder);
                     }
                 }
                 else {
@@ -396,38 +366,86 @@ const strategy = {
                 }
                 resolve(data);
             });
-
         });
     },
-    twoStream: async (symbol, id,quantity) => {
+    twoStream: async (authClient,symbol, id, quantity) => {
+        var botStatus = (await Brain.user.botStatus(id)).data.status;
+        authClient.ws.futuresUser(async (x) => {
+            var { symbol, eventType, orderStatus, clientOrderId, orderType, executionType, realizedProfit, positionSide, priceLastTrade } = x;
+            if (eventType == 'ORDER_TRADE_UPDATE') {
+                var isStrategyTwo = clientOrderId.includes('rxTwo');
+                var botStatus = (await Brain.user.botStatus(id)).data.status;
+                if (orderStatus == 'FILLED' && orderType == 'MARKET' && executionType == 'TRADE' && realizedProfit == '0' && isStrategyTwo && botStatus == true) {
+                    console.log("================================================================");
+                    test.log('x:: ', x, '\n _____________________');
+                    test.log(orderStatus, " |X| ", orderType);
+                    var _side;
+                    var _orderInfo = await Brain.getOrder(clientOrderId);
+                    console.log("Corresponding info ::>> ", _orderInfo);
+                    var { side, customId, quantity } = _orderInfo.data.order;
+
+                    if (side == 'BUY') {
+                        _side = 'SELL';
+                    }
+                    else {
+                        _side = 'BUY';
+                    };
+                    console.log("priceLast> ", x.priceLastTrade);
+                    var tsOrder = await authClient.order({
+                        symbol: symbol,
+                        side: _side,
+                        quantity: quantity,
+                        type: 'TRAILING_STOP_MARKET',
+                        positionSide: positionSide,
+                        price: priceLastTrade,
+                        callbackRate: '0.3',
+                        newClientOrderId: customId + 'ts'
+                    });
+                    test.log(tsOrder);
+                }
+            }
+        })
         return new Promise(async (resolve, reject) => {
             var _firstCandles = await getCandles(symbol);
             var prices = _firstCandles.all.map(o => { return { close: Number(o['close']), time: o['closeTime'] } });
-            
+
             let signalFound = false;
             var sp = symbol.split('USDT');
-        
+
             var _symbol = `${sp[0]}/USDT`;
             var lastCandles = _firstCandles.last3Candle;
             api.stream.kline({ symbol: symbol, interval: config.botTimeFrame }, async (data) => {
                 /*
                 test.log(`final? : ${data.kline.final}`);    
                 */
-                let emaData = await ema(10, "close", "binance",_symbol, "1m", true)
-                console.log(emaData[emaData.length - 1] - 0.166346)
-                //*//
-                var _upSignal = await alerts.goldenCross(10, 50, 'binance', _symbol, '1m', true) 
-                console.log('a> ',_upSignal);
-                var _downSignal = await alerts.deathCross(10, 50, 'binance', _symbol, '1m', true) 
-                console.log('b', _downSignal)
-                //*/
-                /*
-                var _upSignal = await alerts.emaCrossUp(10, 50, 'binance', _symbol, '1m', true) 
-                console.log('a> ',_upSignal);
-                var _downSignal = await alerts.emaCrossDown(10, 50, 'binance', _symbol, '1m', true) 
-                console.log('b', _downSignal)
-                */
-                
+                let emaData = await ema(10, "close", "binance", _symbol, "1m", true);
+                let emaData50 = await ema(50, "close", "binance", _symbol, "1m", true);
+               
+                let _10 = emaData.reverse()[0];
+                let _50 = emaData50.reverse()[0];
+                console.log('10::: ', _10);
+                console.log('50::: ', _50);
+                var _upSignal, _downSignal;
+                if (_10 == _50) {
+                    console.log('equal');
+                }
+                test.log(_10);
+                test.log(_50);
+                _upSignal = (_10 > _50) ? true : false;
+                _downSignal = (_10 < _50) ? true : false;
+
+                if (_upSignal) {
+                    test.log("greater");
+                }
+                if (_downSignal) {
+                    test.log('lesser');
+                }
+                //*
+                //var _upSignal = await alerts.goldenCross(10, 50, 'binance', _symbol, '1m', true)
+                test.log('a> ', _upSignal);
+                //var _downSignal = await alerts.deathCross(10, 50, 'binance', _symbol, '1m', true)
+                test.log('b', _downSignal)
+
                 _candle = data.kline;
                 if (data.kline.final) {
 
@@ -443,11 +461,11 @@ const strategy = {
                     if (lastCandles.length == 3) {
                         lastCandles.shift();
                     }
+                    botStatus = (await Brain.user.botStatus(id)).data.status;
                     lastCandles.push(_candle);
                     signalFound = false;
                 }
-                
-                
+
                 let last_two = lastCandles.slice(-2,);
                 //get support levels from candle data
                 var supports = await getSupports(_firstCandles.all);
@@ -456,76 +474,73 @@ const strategy = {
                 var isBullE = await _candlestick.isBullishEngulfing(last_two);
                 var isBearE = await _candlestick.isBearishEngulfing(last_two);
                 var _currentClosePrice = Number(last_two[1]['close']).toFixed(3);
-                test.log(isBullE," : ", isBearE);
-                //console.log(resistance)
-                var two_r_away = resistance.two_resistance_away ? resistance.two_resistance_away.p : supports.two_support_away.p;
-                
-                
-                if (isBullE && _upSignal){
+                test.log(isBullE, " : ", isBearE);
+
+                /*qUANTITY*/
+                quantity = (_currentClosePrice / quantity);
+                console.log(quantity);
+
+                if (isBullE && _upSignal && botStatus == true) {
                     //BUY POSITION
                     var _side = 'BUY';
-                    if (signalFound == false){
+                    var _positionSide = 'LONG';
+                    if (signalFound == false) {
 
                         console.log(`Bullish Engulfing & GCross found `)
                         console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`)
-                        console.log(supports.last_two);
-                        
-                        var c = await calculateTpSl(_side,supports,resistance,_currentClosePrice);
-                        var {tp,sl} = c;
-                        var takeProfit = tp;
-                        var stopLoss = sl;
+                        test.log(supports.last_two);
 
-                        console.log(`test stop_loss: ${_currentClosePrice}|${stopLoss} > `,_currentClosePrice >= stopLoss );
-                        console.log(`test take_profit:  ${_currentClosePrice}|${takeProfit} > `,_currentClosePrice <= takeProfit);
-                        //check if takeProfit and stopLoss situable ; if not get another
-                        //(_currentClosePrice >= stopLoss) ? "" : stopLoss = await getStopLoss(supports.supports,_currentClosePrice,stopLoss);
-                        
+                        var _customId = await Brain.generateOrderId(id, symbol, last_two[1]['closeTime'], 2);
 
-                        console.log(`Two support points away:: ${supports.two_support_away.p}`);
-                        console.log(`Two resistance points away:: ${resistance}`);
+                        test.log(_customId);
 
-                        var _customId = await Misc.generateOrderId(id,symbol,last_two[1]['closeTime']);
-
-                        console.log(_customId);
-                        //var newOrder = await testOrder('BUY',symbol,_customId,_currentClosePrice,takeProfit,stopLoss);
-                        ////*
                         signalFound = true;
+                        var _order = {
+                            symbol: symbol,
+                            side: _side,
+                            quantity: quantity,
+                            customId: _customId,
+                            by : id,
+                            positionSide: _positionSide
+                        }
+                        await Brain.saveOrder(_order);
                         var newOrder = await authClient.order({
-                            symbol : symbol,
-                            side : _side,
-                            quantity : quantity,
-                            type : 'TRAILING_STOP_MARKET',
-                            newClientOrderId : _customId,
+                            symbol: symbol,
+                            side: _side,
+                            quantity: quantity,
+                            type: 'MARKET',
+                            newClientOrderId: _customId,
+                            positionSide: _positionSide
                         });
-                        console.log(newOrder);                       
                     }
                 }
-                else if(isBearE && _downSignal){
-                    if(signalFound == false){
+                else if (isBearE && _downSignal && botStatus == true) {
+                    if (signalFound == false) {
                         var _side = 'SELL';
+                        var _positionSide = 'SHORT';
                         console.log(`Bearish Engulfing found`)
                         console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`)
                         console.log(supports.last_two);
                         console.log(`Two resistance points away::`, resistance.two_resistance_away);
-                        var _customId = await Misc.generateOrderId(id,symbol,last_two[1]['closeTime']);
-                       
-                        var c = await calculateTpSl(_side,supports,resistance,_currentClosePrice);
-                        var {tp,sl} = c;
-                        var takeProfit = tp;
-                        var stopLoss = sl;
+                        var _customId = await Brain.generateOrderId(id, symbol, last_two[1]['closeTime'], 2);
 
-
-                        console.log(_customId)
-                        console.log(`sell_test stop_loss: ${_currentClosePrice}|${stopLoss} >> `,_currentClosePrice <= stopLoss );
-                        console.log(`sell_test take_profit:  ${_currentClosePrice}|${takeProfit} >> `,_currentClosePrice >= takeProfit);
-                       // var newOrder = await testOrder('SELL',symbol,_customId,_currentClosePrice,takeProfit,stopLoss);
-                       signalFound = true;
+                        signalFound = true;
+                        var _order = {
+                            symbol: symbol,
+                            side: _side,
+                            quantity: quantity,
+                            customId: _customId,
+                            by : id,
+                            positionSide: _positionSide
+                        }
+                        await Brain.saveOrder(_order);
                         var newOrder = await authClient.order({
-                            symbol : symbol,
-                            side : "SELL",
-                            quantity : quantity,
-                            type : 'TRAILING_STOP_MARKET',
-                            newClientOrderId : _customId
+                            symbol: symbol,
+                            side: _side,
+                            quantity: quantity,
+                            type: 'MARKET',
+                            newClientOrderId: _customId,
+                            positionSide: _positionSide
                         });
                         console.log(newOrder);
                     }
@@ -539,52 +554,32 @@ const strategy = {
     }
 }
 
-const Bot = {
-    start : async (symbol,quantity,by,strategy) => {
-        //check quantity
-        //and apikeys
-        let _bConfig = {
-            apiKey: config.apiKey,
-            apiSecret: config.apiSecret,
-            httpFutures: true,
-        }
-        let authClient = Binance(_bConfig);
-    }
-}
-//STRATEGY ONE
-//When there is a bullish engulfing
-//  Position : BUY
-//  STOP_LOSS : 2 SUPPORTS AWAY FROM ENTRY POINT
-//
-//
 class strategies {
-    constructor(symbol, id , quantity){
+    constructor(symbol, id, quantity) {
         this.symbol = symbol;
         this.id = id;
         this.quantity = quantity;
     }
-    strategyOne () {
+    strategyOne() {
         strategy.oneStream(this.symbol, this.id, this.quantity)
     }
-    strategyTwo () {
+    strategyTwo() {
         strategy.twoStream(this.symbol, this.id, this.quantity)
     }
 }
-
 /*
-STOP, STOP_MARKET:
-    > BUY: latest price (“MARK_PRICE” or “CONTRACT_PRICE”) >= stopPrice
-    > SELL: latest price (“MARK_PRICE” or “CONTRACT_PRICE”) <= stopPrice
-
-TAKE_PROFIT, TAKE_PROFIT_MARKET:
-   > BUY: latest price (“MARK_PRICE” or “CONTRACT_PRICE”) <= stopPrice
-   > SELL: latest price (“MARK_PRICE” or “CONTRACT_PRICE”) >= stopPrice
+    var init = new strategies('BNBUSDT', 'd44r874', '0.05');
+    init.strategyTwo();
 */
+const Bot = {
+    start : async (auth,symbol,id,quantity,strategy) => {
+        var authClient = Binance(auth);
+        console.log(strategy,' | ',symbol,' | ',id,' | ',auth,' | ',quantity);
+        return true;
+    }
+}
+
+exports.Bot = Bot;
 
 
-
-/*
-var init = new strategies('BNBUSDT','d44r874', '0.02');
-init.strategyOne();
-*/
 

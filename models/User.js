@@ -6,6 +6,7 @@ var user = new Schema({
     password : {type : String},
     binanceApiKey : {type : String},
     binanceApiSecret : {type : String},
-    botStatus : {type : Boolean, default : false}
+    botStatus : {type : Boolean, default : false},
+    _uid : {type : String}
 });
 module.exports=mongoose.model("User",user)

@@ -22,7 +22,7 @@ const RouteControl = {
         },
         dashboard : async (req,res) => {
             //console.log(req.session.user);
-            var orders =  await Brain.user.myOrders({email : req.session.user.email});
+            var orders =  await Brain.user.myOrders(req.session.user);
             res.render('dashboard',{user : req.session.user,orders : orders});
         }
     },
@@ -39,7 +39,7 @@ const RouteControl = {
             }
             else if(!user.admin){
                 res.status = 302;
-                res.redirect("/dashboard");
+                res.redirect("/mini");
             } 
             else{
                 res.redirect("start");
@@ -55,7 +55,7 @@ const RouteControl = {
             var user = trySignup.data;
             req.session.user = user;
             res.status = 302;
-            res.redirect("/dashboard");
+            res.redirect("/mini");
         }
         else {
             res.render("signup", { message: trySignup.msg });
@@ -63,7 +63,9 @@ const RouteControl = {
     },
     miniDash : async (req,res) => {
         var user = req.session.user;
-        res.render("minidash",{data : user});
+        var _sym = await Brain.getSymbolInfo();
+        var _data = await Brain.user.getById(user._uid);
+        res.render("minidash",{data : _data.data, symbols : _sym});
     },
     status : async (req,res) => {
 
@@ -71,11 +73,17 @@ const RouteControl = {
     getOrder : async (req,res) => {
 
     },
-    myOrders : async (req,res) => {
-
+    getLeverage : async (req,res) => {
+        var user = req.session.user;
+        var {symbol} = req.body;
+        //console.log(symbol);
+        var gt = await Brain.getLeverage(user,symbol);
+        res.json(gt);
     },
-    cancelOrder : async (req,res) => {
-
+    stopBot : async (req,res) => {
+        let user = req.session.user;
+        let _stop = await Brain.user.stopBot(user);
+        res.json(_stop)
     },
     botOrder : async (req,res) => {
         let user = req.session.user;
@@ -84,9 +92,15 @@ const RouteControl = {
     },
     submitKeys : async (req,res) => {
         var user = req.session.user;
-        var {email} = user;
-        var submit = await Brain.user.submitKeys(email,req.body);
+        var {_uid} = user;
+        console.log(_uid);
+        var submit = await Brain.user.submitKeys(_uid,req.body);
         res.json(submit);
+    },
+    getSymbolInfo : async (req,res) => {
+        var {symbol} = req.body;
+        var _symInfo = await Brain.getSymbolInfo(symbol);
+        res.json(_symInfo);
     }
 
 }

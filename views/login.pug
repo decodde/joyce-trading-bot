@@ -1,28 +1,29 @@
+head 
+    link(rel="stylesheet", href="./css/login.css")
 include top 
-body
+body.bg-ash
     .h-pail-center
-        .h-card.h-pail-center(style="z-index:2")
-            p igoewn
-        form#loginForm.h-card.h-shadow-pinkish.h-bg-pinkish.h-text(action="/login",method="POST",style="z-index:9;border-radius: 10px 10px 60% 10px;")
+        form#loginForm.h-card.h-shadow-pinkish.h-outline-pinkish.h-text(action="/login",method="POST")
             br
-            h4.h-text-white Great Light
+            h4.h-text-purple.h-text.h-text-bold Rocket 125x
             div
                 i.h-text.h-text-red#errorMessage #{message}
             br
             div.h-card-sm
                 div
-                    p.h-text @email
-                    input#email.h-input.h-text.h-outline-pinkish(name="email",type="text")
+                    p.h-text-bold.h-text-white.h-font-tiny @email
+                    input#email.h-input.h-margin-0.h-text.h-outline-pinkish(name="email",type="text")
+                br
                 div
-                    p.h-text.h-text-lightblue @password
-                    input#password.h-input.h-text.h-outline-pinkish(name="password",type="password")
+                    p.h-text-bold.h-text-lightblue.h-font-tiny @password
+                    input#password.h-input.h-margin-0.h-text.h-outline-pinkish(name="password",type="password")
                 br
                 button.h-button.h-text.h-bg-pinkish.h-text-white Login
             br
             br 
             br
-            a.h-text.h-text-pinkish(href="/onboard")
-                i.h-font-sm i am new here
+            a.h-text.h-card-sm.h-bg-white.h-text-purple(href="/onboard")
+                i.h-font-tiny.h-text-bold i am new here
             br
             br
 

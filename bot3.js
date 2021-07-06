@@ -200,7 +200,7 @@ var calculateTpSl = async (side, supports, resistance, price) => {
             takeProfit_A = Number(price) + Number(config.tpslTweak);
         }
 
-        console.log('TakeProfit Set At: : ,',takeProfit_A);
+        console.log('TakeProfit Set At: : ,', takeProfit_A);
 
         var real_tp = takeProfit_A;
         var stopLoss_A = supports.two_support_away.p;
@@ -210,12 +210,12 @@ var calculateTpSl = async (side, supports, resistance, price) => {
             stopLoss_A = supports.supports.reverse().find(o => Number(o['p']) < price).p;
         }
         else {
-            console.log('StopLoss b4 Tweak:  ',stopLoss_A);
+            console.log('StopLoss b4 Tweak:  ', stopLoss_A);
             console.log('Using StopLoss Tweak');
             stopLoss_A = Number(price) - Number(config.tpslTweak);
         }
         var real_sl = Number(stopLoss_A);
-        console.log('StopLoss Set At: : , ',stopLoss_A);
+        console.log('StopLoss Set At: : , ', stopLoss_A);
         return {
             tp: real_tp,
             sl: real_sl
@@ -241,9 +241,9 @@ var calculateTpSl = async (side, supports, resistance, price) => {
             stopLoss_A = resistance.resistance.reverse().find(o => Number(o['p']) > price).p
         }
         else {
-            console.log('StopLoss b4 Tweak:  ',stopLoss_A);
+            console.log('StopLoss b4 Tweak:  ', stopLoss_A);
             console.log('Using StopLoss Tweak');
-            stopLoss_A = Number(stopLoss_A) + Number(config.tpslTweak);
+            stopLoss_A = Number(price) + Number(config.tpslTweak);
         }
         var real_sl = Number(stopLoss_A);
         console.log('StopLoss Set At: :  ', stopLoss_A);
@@ -296,7 +296,7 @@ const strategy = {
                         newClientOrderId: customId + 'tSM'
                     })
                     console.log(trailingOrder);*/
-                    
+
                     var tpOrder = await authClient.order({
                         symbol: symbol,
                         side: _side,
@@ -319,11 +319,11 @@ const strategy = {
                         positionSide: positionSide,
                         newClientOrderId: customId + 'sl'
                     });
-                    
+
                     //test.log(tpOrder);
                     //test.log(slOrder);
                 }
-                
+
                 if (executionType == 'EXPIRED') {
                     var { symbol, orderType, clientOrderId } = x;
                     if (orderType == 'TAKE_PROFIT') {
@@ -353,7 +353,7 @@ const strategy = {
                         console.log("-_-")
                     }
                 }
-                
+
             }
         })
         return new Promise(async (resolve, reject) => {
@@ -405,9 +405,9 @@ const strategy = {
                         var { tp, sl } = c;
                         takeProfit = tp;
                         stopLoss = sl;
-                       
-                       // console.log(`test stop_loss: ${_currentClosePrice}|${stopLoss} > `, _currentClosePrice >= stopLoss);
-                       // console.log(`test take_profit:  ${_currentClosePrice}|${takeProfit} > `, _currentClosePrice <= takeProfit);
+
+                        // console.log(`test stop_loss: ${_currentClosePrice}|${stopLoss} > `, _currentClosePrice >= stopLoss);
+                        // console.log(`test take_profit:  ${_currentClosePrice}|${takeProfit} > `, _currentClosePrice <= takeProfit);
                         //check if takeProfit and stopLoss situable ; if not get another
                         //(_currentClosePrice >= stopLoss) ? "" : stopLoss = await getStopLoss(supports.supports,_currentClosePrice,stopLoss);
 
@@ -421,8 +421,8 @@ const strategy = {
                         var testTakeProfit = _currentClosePrice <= takeProfit;
 
                         signalFound = true;
-                        if(testStopLoss){
-                            if(testTakeProfit){
+                        if (testStopLoss) {
+                            if (testTakeProfit) {
                                 var _order = {
                                     symbol: symbol,
                                     side: _side,
@@ -442,12 +442,12 @@ const strategy = {
                                     positionSide: _positionSide
                                 });
                             }
-                            else { 
-                                console.log("Could not set take profit :: ",takeProfit);
+                            else {
+                                console.log("Could not set take profit :: ", takeProfit);
                             }
                         }
-                        else { 
-                            console.log("Could not set stop loss :: ",stopLoss);
+                        else {
+                            console.log("Could not set stop loss :: ", stopLoss);
                         }
                         /*
                         var _order = {
@@ -495,8 +495,8 @@ const strategy = {
                         var testStopLoss = _currentClosePrice <= stopLoss;
                         var testTakeProfit = _currentClosePrice >= takeProfit;
                         signalFound = true;
-                        if(testStopLoss){
-                            if(testTakeProfit){
+                        if (testStopLoss) {
+                            if (testTakeProfit) {
                                 var _order = {
                                     symbol: symbol,
                                     side: _side,
@@ -516,12 +516,12 @@ const strategy = {
                                     positionSide: _positionSide
                                 });
                             }
-                            else { 
-                                console.log("Could not set take profit :: ",takeProfit);
+                            else {
+                                console.log("Could not set take profit :: ", takeProfit);
                             }
                         }
-                        else { 
-                            console.log("Could not set stop loss :: ",stopLoss)
+                        else {
+                            console.log("Could not set stop loss :: ", stopLoss)
                         }
                         //console.log(newOrder);
                     }
@@ -535,6 +535,40 @@ const strategy = {
         });
     },
     twoStream: async (symbol, id, quantity) => {
+        authClient.ws.futuresUser(async (x) => {
+            var { symbol, eventType, orderStatus, clientOrderId, orderType, executionType, realizedProfit,priceLastTrade, positionSide } = x;
+            if (eventType == 'ORDER_TRADE_UPDATE') {
+                var isStrategyTwo = clientOrderId.includes('rxTwo');
+                if (orderStatus == 'FILLED' && orderType == 'MARKET' && executionType == 'TRADE' && realizedProfit == '0' && isStrategyTwo) {
+                    test.log("================================================================");
+                    test.log('x:: ', x, '\n _____________________');
+                    test.log(orderStatus, " |X| ", orderType);
+                    var _side;
+                    var _orderInfo = await Brain.getOrder(clientOrderId);
+                    console.log("Corresponding info ::>> ", _orderInfo);
+                    var { side, customId, quantity } = _orderInfo.data.order;
+
+                    if (side == 'BUY') {
+                        _side = 'SELL';
+                    }
+                    else {
+                        _side = 'BUY';
+                    };
+                    console.log("priceLast> ", x.priceLastTrade);
+                    var tsOrder = await authClient.order({
+                        symbol: symbol,
+                        side: _side,
+                        quantity: quantity,
+                        type: 'TRAILING_STOP_MARKET',
+                        positionSide: positionSide,
+                        price: priceLastTrade,
+                        callbackRate: '0.1',
+                        newClientOrderId: customId + 'ts'
+                    });
+                    test.log(tsOrder);
+                }
+            }
+        })
         return new Promise(async (resolve, reject) => {
             var _firstCandles = await getCandles(symbol);
             var prices = _firstCandles.all.map(o => { return { close: Number(o['close']), time: o['closeTime'] } });
@@ -548,20 +582,42 @@ const strategy = {
                 /*
                 test.log(`final? : ${data.kline.final}`);    
                 */
-                let emaData = await ema(10, "close", "binance", _symbol, "1m", true)
-                console.log(emaData[emaData.length - 1] - 0.166346)
-                //*//
-                var _upSignal = await alerts.goldenCross(10, 50, 'binance', _symbol, '1m', true)
+                let emaData = await ema(10, "close", "binance", _symbol, "1m", true);
+                let emaData50 = await ema(50, "close", "binance", _symbol, "1m", true);
+               
+                let _10 = emaData.reverse()[0];
+                let _50 = emaData50.reverse()[0];
+                console.log('10::: ', _10);
+                console.log('50::: ', _50);
+                var _upSignal, _downSignal;
+                if (_10 == _50) {
+                    console.log('equal');
+                }
+                console.log(_10);
+                console.log(_50);
+                _upSignal = (_10 > _50) ? true : false;
+                _downSignal = (_10 < _50) ? true : false;
+
+                if (_upSignal) {
+                    console.log("greater");
+                }
+                if (_downSignal) {
+                    console.log('lesser');
+                }
+                //*
+                //var _upSignal = await alerts.goldenCross(10, 50, 'binance', _symbol, '1m', true)
                 console.log('a> ', _upSignal);
-                var _downSignal = await alerts.deathCross(10, 50, 'binance', _symbol, '1m', true)
+                //var _downSignal = await alerts.deathCross(10, 50, 'binance', _symbol, '1m', true)
                 console.log('b', _downSignal)
-                //*/
+                /*/
                 /*
+
                 var _upSignal = await alerts.emaCrossUp(10, 50, 'binance', _symbol, '1m', true) 
                 console.log('a> ',_upSignal);
                 var _downSignal = await alerts.emaCrossDown(10, 50, 'binance', _symbol, '1m', true) 
                 console.log('b', _downSignal)
                 */
+
 
                 _candle = data.kline;
                 if (data.kline.final) {
@@ -581,7 +637,6 @@ const strategy = {
                     lastCandles.push(_candle);
                     signalFound = false;
                 }
-
 
                 let last_two = lastCandles.slice(-2,);
                 //get support levels from candle data
@@ -616,7 +671,6 @@ const strategy = {
                         //check if takeProfit and stopLoss situable ; if not get another
                         //(_currentClosePrice >= stopLoss) ? "" : stopLoss = await getStopLoss(supports.supports,_currentClosePrice,stopLoss);
 
-
                         //console.log(`Two support points away:: ${supports.two_support_away.p}`);
                         //console.log(`Two resistance points away:: ${resistance}`);
 
@@ -626,6 +680,14 @@ const strategy = {
                         //var newOrder = await testOrder('BUY',symbol,_customId,_currentClosePrice,takeProfit,stopLoss);
                         ////*
                         signalFound = true;
+                        var _order = {
+                            symbol: symbol,
+                            side: _side,
+                            quantity: quantity,
+                            customId: _customId,
+                            positionSide: _positionSide
+                        }
+                        await Brain.saveOrder(_order);
                         var newOrder = await authClient.order({
                             symbol: symbol,
                             side: _side,
@@ -658,9 +720,17 @@ const strategy = {
                         console.log(`sell_test take_profit:  ${_currentClosePrice}|${takeProfit} >> `, _currentClosePrice >= takeProfit);
                         // var newOrder = await testOrder('SELL',symbol,_customId,_currentClosePrice,takeProfit,stopLoss);
                         signalFound = true;
+                        var _order = {
+                            symbol: symbol,
+                            side: _side,
+                            quantity: quantity,
+                            customId: _customId,
+                            positionSide: _positionSide
+                        }
+                        await Brain.saveOrder(_order);
                         var newOrder = await authClient.order({
                             symbol: symbol,
-                            side: "SELL",
+                            side: _side,
                             quantity: quantity,
                             type: 'MARKET',
                             newClientOrderId: _customId,
@@ -842,7 +912,7 @@ var testOrder = async (side, symbol, _customId, _currentClosePrice, takeProfitPr
     console.log(saveOrder)
 }
 
-var init = new strategies('BNBUSDT', 'd44r874', '0.03');
-init.strategyOne();
+var init = new strategies('ETHUSDT', 'd44r874', '0.01');
+init.strategyTwo();
 
 

@@ -269,7 +269,7 @@ const strategy = {
                     var _orderInfo = await Brain.getOrder(clientOrderId);
                     test.log("Corresponding info ::>> ",_orderInfo);
                     var priceLastTrade = x.priceLastTrade;
-                    var {side, customId, quantity} = _orderInfo.data.order;
+                    var {side, customId, quantity, takeProfitPrice} = _orderInfo.data.order;
                    
                     if(side == 'BUY'){
                         _side = 'SELL';
@@ -278,6 +278,17 @@ const strategy = {
                         _side = 'BUY';
                     };
                     console.log("priceLast> ",x.priceLastTrade);
+                    var tpOrder = await authClient.order({
+                        symbol: symbol,
+                        side: _side,
+                        quantity: quantity,
+                        type: 'TAKE_PROFIT',
+                        price: priceLastTrade,
+                        stopPrice: takeProfit,
+                        timeInForce: 'GTC',
+                        positionSide: positionSide,
+                        newClientOrderId: customId + 'tp'
+                    });
                     var tsOrder = await authClient.order({
                         symbol: symbol,
                         side:  _side,
@@ -290,22 +301,22 @@ const strategy = {
                     });
                     test.log(tsOrder);
                 }
-                /*
+                
                 if(executionType == 'EXPIRED'){
                     var {symbol,orderType,clientOrderId} = x;
                     if(orderType == 'TAKE_PROFIT'){
                         var cl_id = clientOrderId.split("tp")[0];
                         console.log(cl_id);
-                        var sl_id = `${cl_id}sl`;
-                        console.log(sl_id)
+                        var ts_id = `${cl_id}ts`;
+                        console.log(ts_id)
                         var cancel = await authClient.futuresCancelOrder({
                             symbol : symbol,
-                            origClientOrderId : sl_id
+                            origClientOrderId : ts_id
                         })
                         console.log(cancel);
                     }
-                    else if (orderType == 'STOP'){
-                        var cl_id = clientOrderId.split("sl")[0];
+                    else if (orderType == 'TRAILING_STOP_MARKET'){
+                        var cl_id = clientOrderId.split("ts")[0];
                         console.log(cl_id);
                         var tp_id = `${cl_id}tp`;
                         console.log(tp_id)
@@ -319,7 +330,7 @@ const strategy = {
                         console.log("-_-")
                     }
                 }
-                */
+                
             }
         })
         return new Promise(async (resolve, reject) => {
@@ -389,7 +400,7 @@ const strategy = {
                         console.log(`Two support points away:: ${supports.two_support_away.p}`);
                         console.log(`Two resistance points away:: ${resistance}`);
 
-                        var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime']);
+                        var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'],1);
 
                         console.log(_customId);
 
@@ -423,7 +434,7 @@ const strategy = {
                         console.log(`   => Signal @ price : ${last_two[1]['close']} time:${last_two[1]['closeTime']}`)
                         console.log(supports.last_two);
                         console.log(`Two resistance points away::`, resistance.two_resistance_away);
-                        var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime']);
+                        var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'],1);
                         
                         
                         var c = await calculateTpSl(_side,supports,resistance,_currentClosePrice);
@@ -770,7 +781,7 @@ var testOrder = async (side, symbol, _customId, _currentClosePrice, takeProfitPr
     console.log(saveOrder)
 }
 
-var init = new strategies('ETHUSDT','d44r874', '0.02');
+var init = new strategies('BNBUSDT','d44r874', '0.02');
 init.strategyOne();
 
 var _ema = async (symbol) => {

@@ -13,7 +13,16 @@ const Constants = {
     API_KEY_INVALID : "Apikey is invalid",
     KEY_EMPTY : "Key fields are empty",
     API_KEY_SUCCESS : "Binance keys submitted successfully",
-    API_KEY_FAIL : "Binance keys failed to submit"
+    API_KEY_FAIL : "Binance keys failed to submit",
+    LEVERAGE_SETUP_FAIL : "Leverage update failed",
+    LEVERAGE_SETUP_SUCCESS : "Leverage update successful",
+    ERROR_FETCHING_DATA : "There was an error fetching sufficient data from our end. Sorry",
+    MARGIN_INSUFFICIENT : "Available balance is not enough to run the bot; Please do increase your wallet balance. Min_notional not met",
+    BOT_START_FAIL : "Error starting bot",
+    BOT_START_SUCCESS : "Bot started successfully",
+    BOT_STOP_FAIL : " Error stopping bot",
+    BOT_STOP_SUCCESS : " Bot stopped successfully",
+    USER_NOT_FOUND : "User not found"
 }
 
 exports.Constants = Constants;
