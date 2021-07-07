@@ -4,7 +4,7 @@
   "description": "trading bot",
   "main": "index.js",
   "scripts": {
-    "start": "node bot3.js"
+    "start": "node index.js"
   },
   "author": "Fasina Oreoluwa",
   "license": "MIT",
