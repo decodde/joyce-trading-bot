@@ -42,6 +42,8 @@ include top
                                     if data 
                                         if data.binanceKey
                                             input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922", disabled ,value = `${data.binanceApiKey}`)
+                                        else
+                                            input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922" )
                                     else
                                         input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922" )
                                 div.h-margin-1
@@ -49,6 +51,8 @@ include top
                                     if data
                                         if data.binanceApiSecret
                                             input.h-input.h-text.h-margin-0#apiSecret(type="text",name="apiSecret",placeholder="apiSecret", disabled ,value = `${data.binanceApiSecret}`)
+                                        else 
+                                            input.h-input.h-text.h-margin-0#apiSecret(type="text",name="apiSecret",placeholder="apiSecret")
                                     else 
                                         input.h-input.h-text.h-margin-0#apiSecret(type="text",name="apiSecret",placeholder="apiSecret")
                                 br
@@ -63,6 +67,9 @@ include top
                                         if data.botStatus == true
                                             span.h-bg-purple.h-text-bold.h-font-tiny-2
                                                 i running
+                                        else 
+                                            span.h-bg-pinkish.h-text-bold.h-font-tiny-2
+                                                i idle
                                     else 
                                         span.h-bg-pinkish.h-text-bold.h-font-tiny-2
                                             i idle
@@ -89,6 +96,8 @@ include top
                                 if data
                                     if data.botStatus == false
                                         button.h-button.h-bg-lightgreen.h-shadow-lightgreen.h-text-white.h-text-bold() Start Bot
+                                    else 
+                                        button.h-button.h-bg-lightgreen.h-shadow-lightgreen.h-text-white.h-text-bold(disabled) Bot running
                                 else 
                                     button.h-button.h-bg-lightgreen.h-shadow-lightgreen.h-text-white.h-text-bold(disabled) Bot running
 
@@ -97,6 +106,9 @@ include top
                                     if data.botStatus == true
                                         h5.h-text-bold.h-margin-0.h-text-red Are you sure you want to stop the bot?
                                         button.h-button.h-bg-red.h-text-white.h-text-bold(onclick="stopBot()") STOP
+                                    else 
+                                        h5.h-text-bold.h-margin-0.h-text-red Bot running already
+                                        button.h-button.h-bg-red.h-text-white.h-text-bold(onclick="switchTo('2')") STOP
                                 else 
                                     h5.h-text-bold.h-margin-0.h-text-red Bot running already
                                     button.h-button.h-bg-red.h-text-white.h-text-bold(onclick="switchTo('2')") STOP
