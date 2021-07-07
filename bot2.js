@@ -780,10 +780,10 @@ var testOrder = async (side, symbol, _customId, _currentClosePrice, takeProfitPr
     var saveOrder = await Brain.saveOrder(_order);
     console.log(saveOrder)
 }
-
+/*
 var init = new strategies('BNBUSDT','d44r874', '0.02');
 init.strategyOne();
-
+*/
 var _ema = async (symbol) => {
     try {
         var sp = symbol.split('USDT');

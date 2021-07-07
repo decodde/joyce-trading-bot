@@ -911,8 +911,8 @@ var testOrder = async (side, symbol, _customId, _currentClosePrice, takeProfitPr
     var saveOrder = await Brain.saveOrder(_order);
     console.log(saveOrder)
 }
-
+/*
 var init = new strategies('ETHUSDT', 'd44r874', '0.01');
 init.strategyTwo();
-
+*/
 

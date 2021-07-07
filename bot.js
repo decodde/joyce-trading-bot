@@ -360,5 +360,6 @@ const strategy_two = async (symbol,id) => {
         }
     },config.timerAdjust)
 }
-
+/*
 strategy_one("BTCUSDT","43T2DS")
+*/
