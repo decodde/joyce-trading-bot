@@ -18,7 +18,7 @@ const { testConsole: test } = require("../testConsole");
 const { resolve } = require("path");
 const { BotMonitor } = require("./BotMonitor");
 
-if (process.env.mode == 'production') {
+if (process.env.MODE == 'production') {
     mongodbURL = process.env.MONGO_DB_PROD;
 }
 else {
