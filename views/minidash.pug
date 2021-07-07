@@ -36,10 +36,11 @@ include top
                         div.h-dash-left(style="padding-left : 5px")
                             form#binanceKeys.view.h-anim-rollin.h-hide(action="POST")
                                 h5.h-text-bold.h-margin-0 Set your binance keys
+                                span.h-font-tiny.h-text-right.h-text-bold.h-padding-1.h-bg-lightgreen.h-text-white(onclick="edit()") Edit
                                 br
                                 div.h-margin-1
                                     p.h-margin-0.h-text.h-text-pinkish.h-text-left apiKey
-                                    p.h-text-left.h-text-bold.h-padding-1.h-bg-lightgreen.h-text-white(onclick="edit()") Edit
+                                    
                                     if data 
                                         if data.binanceKey
                                             input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922", disabled ,value = `${data.binanceApiKey}`)
