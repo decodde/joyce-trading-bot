@@ -18,6 +18,12 @@ let switchTo = async (x) => {
         document.getElementById('stopBot').classList.replace('h-hide', 'h-show');
     }
 }
+
+let edit = async () => {
+    document.getElementById("apiKey").removeAttribute('disabled');
+    document.getElementById("apiSecret").removeAttribute('disabled');
+}
+
 document.getElementById('binanceKeys').onsubmit = (async (e) => {
     e.preventDefault();
     //console.log('binanceK')
