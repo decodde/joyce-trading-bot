@@ -280,17 +280,18 @@ const Brain = {
                     }
                     try{    
                         var saveKeys = await User.updateOne({_uid: _uid},{$set : {binanceApiKey : apiKey, binanceApiSecret : apiSecret}});
-                        if (saveKeys.nModified == 1){
+                        BotMonitor.log('SUBMIT KEYS: save',saveKeys,_uid);
+                        if (saveKeys.ok == 1){
                             BotMonitor.log('SUBMIT KEYS',`Keys submitted successfully`,_uid);
                             return Response.success(Constants.API_KEY_SUCCESS,_data);
                         }
                         else{
-                            BotMonitor.log('SUBMIT KEYS',`Failed to submit keys`,_uid);
+                            BotMonitor.log('SUBMIT KEYS: saving',`Failed to submit keys`,_uid);
                             return Response.error(Constants.API_KEY_FAIL);
                         }
                     }
                     catch(e){
-                        test.log(e);
+                        console.log(e);
                         BotMonitor.log('SUBMIT KEYS',`Failed to submit keys`,_uid);
                         return Response.error(Constants.DB_ERROR);
                     }                

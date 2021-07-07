@@ -42,7 +42,7 @@ include top
                                     p.h-margin-0.h-text.h-text-pinkish.h-text-left apiKey
                                     
                                     if data 
-                                        if data.binanceKey
+                                        if data.binanceApiKey
                                             input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922", disabled ,value = `${data.binanceApiKey}`)
                                         else
                                             input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922" )

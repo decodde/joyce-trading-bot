@@ -36,7 +36,8 @@ app.get("/login", RouteControl.page.login);
 app.get("/onboard", RouteControl.page.onboard)
 app.get("/order/:orderId", RouteControl.auth ,RouteControl.getOrder);
 app.get("/dashboard", RouteControl.auth, RouteControl.page.dashboard);
-app.get("/mini", RouteControl.auth, RouteControl.miniDash)
+app.get("/mini", RouteControl.auth, RouteControl.miniDash);
+app.get("/403", RouteControl.error);
 
 app.post("/logout", RouteControl.auth, RouteControl.logout);
 app.post("/getLeverage", RouteControl.auth, RouteControl.getLeverage);

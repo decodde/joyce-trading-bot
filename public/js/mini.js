@@ -42,17 +42,20 @@ document.getElementById('binanceKeys').onsubmit = (async (e) => {
     }
     try {
         var _req = await fetch('/submitKeys', opt);
-        _req = _req.json();
+        _req = await _req.json();
         if (_req.type == "success") {
             //notify success
             document.getElementById('apiSecret').setAttribute('disabled', '');
             document.getElementById('apiKey').setAttribute('disabled', '');
             console.log(_req)
+            notify('s',_req.msg);
+        }
+        else if (_req.type == "error") {
             notify('e',_req.msg);
         }
         else {
-            notify('e',_req.msg);
-            console.log(_req)
+            console.log(_req);
+            notify('e','Could not connect to rocket125x server. Connection issues?')
         }
     }
     catch (e) {
@@ -86,6 +89,7 @@ var logout = async () => {
     }
     catch (e) {
         notify('e','Could not connect to rocket125x server. Connection issues?');
+        window.location.reload()
         console.log(e);
     }
 }

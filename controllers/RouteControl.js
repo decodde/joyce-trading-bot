@@ -65,6 +65,7 @@ const RouteControl = {
         var user = req.session.user;
         var _sym = await Brain.getSymbolInfo();
         var _data = await Brain.user.getById(user._uid);
+        console.log(_data.data)
         res.render("minidash",{data : _data.data, symbols : _sym});
     },
     logout : async (req,res) => {
@@ -102,15 +103,25 @@ const RouteControl = {
     },
     submitKeys : async (req,res) => {
         var user = req.session.user;
+        console.log(user)
         var {_uid} = user;
-        console.log(_uid);
-        var submit = await Brain.user.submitKeys(_uid,req.body);
-        res.json(submit);
+        if(_uid){
+            console.log(_uid);
+            var submit = await Brain.user.submitKeys(_uid,req.body);
+            res.json(submit);
+        }
+        else{
+            res.status = 302;
+            res.redirect('/403');
+        }
     },
     getSymbolInfo : async (req,res) => {
         var {symbol} = req.body;
         var _symInfo = await Brain.getSymbolInfo(symbol);
         res.json(_symInfo);
+    },
+    error : async (req,res) => {
+        res.render('403');
     }
 
 }
