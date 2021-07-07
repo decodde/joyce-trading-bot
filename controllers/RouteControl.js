@@ -1,5 +1,5 @@
 const {Brain} = require('./Brain');
-
+const {Response} = require("./misc/Response")
 const RouteControl = {
     auth: (req, res, next) => {
         if (req.session.user) {
@@ -66,6 +66,16 @@ const RouteControl = {
         var _sym = await Brain.getSymbolInfo();
         var _data = await Brain.user.getById(user._uid);
         res.render("minidash",{data : _data.data, symbols : _sym});
+    },
+    logout : async (req,res) => {
+        var user = req.session.user;
+        if (user.__uid){
+            req.session.destroy();
+            res.redirect('/');
+        }
+        else{
+            res.json(Response.error("You are not logged in"));
+        }
     },
     status : async (req,res) => {
 

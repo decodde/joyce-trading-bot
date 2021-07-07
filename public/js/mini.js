@@ -1,26 +1,26 @@
 let switchTo = async (x) => {
-    console.log(x)
+    //console.log(x)
     var views = document.getElementsByClassName('view');
-    console.log(views)
+    //console.log(views)
     for (var i = 0; i < views.length; i++) {
         views[i].classList.replace('h-show', 'h-hide');
     }
     if (x == '1') {
-        console.log('1)')
+        //console.log('1)')
         document.getElementById('binanceKeys').classList.replace('h-hide', 'h-show');
     }
     else if (x == '2') {
-        console.log('2)')
+        //console.log('2)')
         document.getElementById('startBot').classList.replace('h-hide', 'h-show');
     }
     else if (x == '3') {
-        console.log('3)')
+        //console.log('3)')
         document.getElementById('stopBot').classList.replace('h-hide', 'h-show');
     }
 }
 document.getElementById('binanceKeys').onsubmit = (async (e) => {
     e.preventDefault();
-    console.log('binanceK')
+    //console.log('binanceK')
     var apiKey = document.getElementById('apiKey').value;
     var apiSecret = document.getElementById('apiSecret').value;
 
@@ -42,15 +42,48 @@ document.getElementById('binanceKeys').onsubmit = (async (e) => {
             document.getElementById('apiSecret').setAttribute('disabled', '');
             document.getElementById('apiKey').setAttribute('disabled', '');
             console.log(_req)
+            notify('e',_req.msg);
         }
         else {
+            notify('e',_req.msg);
             console.log(_req)
         }
     }
     catch (e) {
         console.log(e);
+        notify('e','Could not connect to rocket125x server. Connection issues?')
     }
 })
+var logout = async () => {
+    var opt = {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+        })
+    }
+    try {
+        var _req = await fetch('/logout', opt);
+        _req = await _req.json();
+        if (_req.type == "success") {
+            console.log(_req)
+            window.location.href = "/";
+            notify('s','Logged out');
+        }
+        else {
+            console.log()
+            notify('e',`Error logging out, ${_req.msg}`);
+            notify('e',`Redirecting to login`);
+            window.location.href = "/";
+        }
+    }
+    catch (e) {
+        notify('e','Could not connect to rocket125x server. Connection issues?');
+        console.log(e);
+    }
+}
+
 var notify = (type, msg) => {
     var not = document.createElement('not');
     if (type == "e") {
