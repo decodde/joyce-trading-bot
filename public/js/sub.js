@@ -13,6 +13,10 @@ let switchTo = async (x) => {
         //console.log('2)')
         document.getElementById('active').classList.replace('h-hide', 'h-show');
     }
+    else if( x == '3'){
+            //console.log('1)')
+            document.getElementById('binanceKeys').classList.replace('h-hide', 'h-show');
+    }
 }
 
 let closePop = async () => {
@@ -133,6 +137,47 @@ let pay = async () => {
         notify('e','Error connecting to rocket125x server. Probably connection issues?');
     }
 }
+
+document.getElementById('binanceKeys').onsubmit = (async (e) => {
+    e.preventDefault();
+    //console.log('binanceK')
+    var apiKey = document.getElementById('apiKey').value;
+    var apiSecret = document.getElementById('apiSecret').value;
+
+    var opt = {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            apiKey: apiKey,
+            apiSecret: apiSecret
+        })
+    }
+    try {
+        var _req = await fetch('/submitKeys', opt);
+        _req = await _req.json();
+        if (_req.type == "success") {
+            //notify success
+            document.getElementById('apiSecret').setAttribute('disabled', '');
+            document.getElementById('apiKey').setAttribute('disabled', '');
+            console.log(_req)
+            notify('s',_req.msg);
+        }
+        else if (_req.type == "error") {
+            notify('e',_req.msg);
+        }
+        else {
+            console.log(_req);
+            notify('e','Could not connect to rocket125x server. Connection issues?')
+        }
+    }
+    catch (e) {
+        console.log(e);
+        notify('e','Could not connect to rocket125x server. Connection issues?')
+    }
+})
+
 var notify = (type, msg) => {
     var not = document.createElement('not');
     if (type == "e") {

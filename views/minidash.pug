@@ -3,7 +3,7 @@ head
 include top 
     body.rocket-bg
         .h-pail-center.h-card.h-bg-pinkish
-            h1.h-card.h-bg-purple.h-text-white.h-text-bold Rocket 125x mini
+            h1.h-card.h-bg-purple.h-text-white.h-text-bold Rocket 125x
             br
             div
                 .row.h-bg-white.h-card-sm.h-padding-1
@@ -31,7 +31,7 @@ include top
                             button.h-button.h-text.h-card-1.h-text-white.h-bg-red.h-shadow-red.h-font-tiny-2(onclick = "notify('e','Bot not running')") Stop Bot
                         br
                         br
-                        button.h-button.h-text.h-card-1.h-text-white.h-bg-yellow.h-shadow-yellow.h-font-tiny-2(onclick = "logout()") Logout
+                        button.h-button.h-text.h-card-1.h-text-white.h-bg-red.h-shadow-red.h-font-tiny-2(onclick = "logout()") Logout
                     .h-col-8.h-card-sm
                         div.h-dash-left(style="padding-left : 5px")
                             form#binanceKeys.view.h-anim-rollin.h-hide(action="POST")
@@ -79,7 +79,7 @@ include top
                                     p.h-margin-0.h-text-bold.h-text-lightgreen.h-text-left Select Strategy
                                     select#strategy.h-input.h-outline-lightgreen(disabled,name="strategy") 
                                         option(value="1") strategy_one
-                                        option(value="2",selected) strategy_two
+                                        option(value="2",selected) strategy_one
                                 .h-margin-1 
                                     p.h-margin-0.h-text-bold.h-text-lightblue.h-text-left Select symbol
                                     select#symbol.h-input.h-outline-lightblue(name="symbol",onchange="symbolInfo()") 
