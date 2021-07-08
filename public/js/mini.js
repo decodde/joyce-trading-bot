@@ -63,6 +63,7 @@ document.getElementById('binanceKeys').onsubmit = (async (e) => {
         notify('e','Could not connect to rocket125x server. Connection issues?')
     }
 })
+
 var logout = async () => {
     var opt = {
         method: 'POST',

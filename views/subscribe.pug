@@ -8,6 +8,9 @@ include top
             div
                 .row.h-bg-white.h-card-sm.h-padding-1
                     div.h-col-3.h-bg-white.h-card-sm
+                        button.h-button.h-text.h-bg-lightblue.h-shadow-lightblue.h-text-white.h-card-1.h-font-tiny-2(onclick="switchTo('3')") Set API Keys
+                        br
+                        br
                         button.h-button.h-text.h-bg-lightblue.h-shadow-lightblue.h-text-white.h-card-1.h-font-tiny-2(onclick="switchTo('1')") Active Subscription
                         br
                         br
@@ -18,6 +21,32 @@ include top
 
                 .h-card-sm
                     div.h-dash-left(style="padding-left : 5px")
+                        form#binanceKeys.view.h-anim-rollin.h-hide.h-card-sm.h-bg-white(action="POST")
+                            h5.h-text-bold.h-margin-0 Set your binance keys
+                            span.h-font-tiny.h-text-right.h-text-bold.h-padding-1.h-bg-lightgreen.h-text-white(onclick="edit()") Edit
+                            br
+                            div.h-margin-1
+                                p.h-margin-0.h-text.h-text-pinkish.h-text-left apiKey
+                                
+                                if data 
+                                    if data.binanceApiKey
+                                        input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922", disabled ,value = `${data.binanceApiKey}`)
+                                    else
+                                        input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922" )
+                                else
+                                    input.h-input.h-text.h-margin-0#apiKey(type="text",name="apiKey",placeholder="apiKey; e.g: 64381659bct225922" )
+                            div.h-margin-1
+                                p.h-margin-0.h-text.h-text-pinkish.h-text-left apiSecret
+                                if data
+                                    if data.binanceApiSecret
+                                        input.h-input.h-text.h-margin-0#apiSecret(type="text",name="apiSecret",placeholder="apiSecret", disabled ,value = `${data.binanceApiSecret}`)
+                                    else 
+                                        input.h-input.h-text.h-margin-0#apiSecret(type="text",name="apiSecret",placeholder="apiSecret")
+                                else 
+                                    input.h-input.h-text.h-margin-0#apiSecret(type="text",name="apiSecret",placeholder="apiSecret")
+                            br
+                            button.h-button.h-bg-lightgreen.h-text-white.h-text-bold Submit
+
                         div#subscribe.view.h-anim-rollin.h-hide(action="POST")
                             .h-card-sm.h-bg-white
                                 h5.h-text-bold.h-margin-0 Select your subscription
@@ -82,7 +111,6 @@ include top
                                             p.h-text-bold.h-text-white $180
                                             button.h-button.h-bg-white.h-shadow-white.h-text-purple.h-text-bold(onclick="payPop('2')") Pay
                             
-
                         div#active.view.h-hide
                             if data
                                 if data.subscribed == true

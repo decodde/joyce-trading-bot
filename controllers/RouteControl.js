@@ -90,6 +90,7 @@ const RouteControl = {
         var user = req.session.user;
         var _sym = await Brain.getSymbolInfo();
         var _data = await Brain.user.getById(user._uid);
+        console.log(_data);
         if(_data.data.subscribed == true){
             res.render("minidash",{data : _data.data, symbols : _sym});
         }

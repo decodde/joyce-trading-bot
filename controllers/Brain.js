@@ -67,8 +67,9 @@ const Brain = {
         if (_req == null) {
             try {
                 var _user = new User(user)
-                _user.save();
-                return Response.success(Constants.SIGNUP_SUCCESS);
+                await _user.save();
+                
+                return Response.success(Constants.SIGNUP_SUCCESS,user);
             }
             catch (e) {
                 return Response.error(Constants.DB_ERROR);
@@ -215,7 +216,7 @@ const Brain = {
                     if (e.code == -1002) {
                         msg = "Please enable withdrawals with your Binance api key";
                     }
-                    return Response.error(Constants.SUB_FAIL, [msg, `${e.code}: ${e.message}`]);
+                    return Response.error(`${Constants.SUB_FAIL}:${e.message}`, [msg, `${e.code}: ${e.message}`]);
                 }
             }
             else {
@@ -724,6 +725,7 @@ const strategy = {
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
+                            
                             var newOrder = await authClient.order({
                                 symbol: symbol,
                                 side: _side,
