@@ -1,26 +1,29 @@
+head 
+    link(rel="stylesheet", href="./css/login.css")
 include top 
-body.h-bg-pinkish
+body.rocket-bg
     .h-pail-center
-        form#loginForm.h-card.h-bg-white.h-text(action="/onboard",method="POST")
+        form#loginForm.h-card.h-shadow-purple.h-outline-purple.h-text(action="/onboard",method="POST")
             br
-            h4.h-text-pinkish Great Light
+            h4.h-text-purple.h-text-bold Rocket 125x
             br
             br
             div
                 i.h-text.h-text-red#errorMessage #{message}
             br
-            div
-                span.h-text-bold @email
-                input#email.h-input.h-text.h-outline-pinkish(name="email",type="text")
-            div
-                span.h-text-bold.h-text-lightblue @password
-                input#password.h-input.h-text.h-outline-pinkish(name="password",type="password")
+            div.h-card-sm
+                div
+                    p.h-text-bold.h-font-tiny.h-text-white @email
+                    input#email.h-input.h-text.h-outline-purple(name="email",type="text")
+                div
+                    p.h-text-bold.h-text-lightblue.h-font-tiny @password
+                    input#password.h-input.h-text.h-outline-purple(name="password",type="password")
             br
-            button.h-button.h-text.h-bg-pinkish.h-text-white Signup
+            button.h-button.h-text.h-bg-purple.h-text-white Signup
             br
             br 
             br
-            a.h-text.h-text-pinkish(href="/login")
+            a.h-card-1.h-bg-white.h-text-bold.h-font-tiny.h-text-pinkish(href="/login")
                 i i have an account
             br
             br

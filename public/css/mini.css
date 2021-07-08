@@ -5,6 +5,7 @@
     padding:10px; 
     bottom:5px;
     right:5px;
+    z-index: 52;
     background-color:black;
 }
 
@@ -16,6 +17,9 @@
     border-bottom: 2px solid red;
 }
 
+.rocket-bg{
+  background-image: url("../img/rocket125x.jpg");
+}
 
 input[type=range] {
     -webkit-appearance: none;

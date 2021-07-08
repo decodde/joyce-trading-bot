@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const test = false;
 const config = {
-    test : true,
+    test : false,
     apiKey : test ? process.env.API_KEY_TEST : process.env.API_KEY ,
     apiSecret : test ? process.env.API_SECRET_TEST : process.env.API_SECRET,
     botTimeFrame : "1m",
@@ -15,7 +15,12 @@ const config = {
     testApiSecret : "d9a66ed003b6b36020c9c33c0cf511d33a4ea2af1c3969b05b201306ded72ab9",
     tpslTweak : 1,
     marginPercent : 0.1,
-    defaultLeverage : 20
+    defaultLeverage : 20,
+    defaultPayCoin : 'USDT',
+    defaultPayAddress : '0xcaea7d5092252c214d0de373fd59a708fab9fdf5',
+    oneWeek : 100,
+    twoWeek : 180,
+    limitDayPay : 2
 }
 //console.log(process.env.API_KEY)
 exports.config = config;

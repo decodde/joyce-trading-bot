@@ -1,8 +1,8 @@
-const {Response} = require("./misc/Response");
+const { Response } = require("./misc/Response");
 require('dotenv').config();
 var mongoose = require('mongoose');
-const {config} = require("../config");
-const crypt=require("crypto");
+const { config } = require("../config");
+const crypt = require("crypto");
 const { Constants } = require("./misc/Constants");
 const { Misc } = require("./misc/Misc");
 
@@ -39,185 +39,281 @@ require("../models/User");
 var Order = mongoose.model("Order");
 var User = mongoose.model("User");
 
-const Brain = { 
-    login : async (body) => {
-        var {email,password} = body;
+const Brain = {
+    login: async (body) => {
+        var { email, password } = body;
         console.log(email)
-        var _req = await User.findOne({email : email});
-        if(_req == null){
+        var _req = await User.findOne({ email: email });
+        if (_req == null) {
             return Response.error(Constants.LOGIN_FAILED);
         }
         else {
             password = await Misc.hashPassword(password);
-            if (_req.password == password){
-                return Response.success(Constants.LOGIN_SUCCESS,_req);
+            if (_req.password == password) {
+                return Response.success(Constants.LOGIN_SUCCESS, _req);
             }
             else {
                 return Response.error(Constants.LOGIN_FAILED);
             }
         }
     },
-    onboard : async (user) => {
-        var {email,password} = user;
+    onboard: async (user) => {
+        var { email, password } = user;
         user.password = await Misc.hashPassword(password);
         user._uid = await Misc.generateId();
-        var _req = await User.findOne({email : email});
-        if(_req == null){
-            try{
+        user.subscribed = false;
+
+        var _req = await User.findOne({ email: email });
+        if (_req == null) {
+            try {
                 var _user = new User(user)
                 _user.save();
                 return Response.success(Constants.SIGNUP_SUCCESS);
             }
-            catch(e){
+            catch (e) {
                 return Response.error(Constants.DB_ERROR);
             }
         }
-        else { 
+        else {
             return Response.error(Constants.EMAIL_EXISTS)
         }
     },
-    saveOrder : async (order) => {
+    saveOrder: async (order) => {
         var _order = new Order(order);
-        try{
+        try {
             await _order.save();
             return true
         }
-        catch(e) { 
-            console.log("JOYCE.SAVEORDER  :",e);
+        catch (e) {
+            console.log("JOYCE.SAVEORDER  :", e);
             return false
         }
     },
-    getOrder : async (id) => {
-        try{
-            var _req = await Order.findOne({customId : id});
-            console.log("id: ",id);
-            if (_req == null){
+    getOrder: async (id) => {
+        try {
+            var _req = await Order.findOne({ customId: id });
+            console.log("id: ", id);
+            if (_req == null) {
                 return Response.error(Constants.DATA_EMPTY);
             }
             else {
-                return Response.success(Constants.DATA_RETRIEVE_SUCCESS,{order : _req})
+                return Response.success(Constants.DATA_RETRIEVE_SUCCESS, { order: _req })
             }
         }
-        catch(e){
+        catch (e) {
             console.log(e)
             return Response.error()
         }
     },
-    checkOrder : async (symbol,price) => {
+    checkOrder: async (symbol, price) => {
         console.log(symbol)
         price = price.toString()
-            var _check = await Order.find({symbol : symbol,$or :[{takeProfitPrice : price},{stopLossPrice : price}]});
-            console.log(_check)
-            if(_check.length > 0){
-                return Response.success(true,_check);
-            }
-            else {
-                return Response.error();
-            }
+        var _check = await Order.find({ symbol: symbol, $or: [{ takeProfitPrice: price }, { stopLossPrice: price }] });
+        console.log(_check)
+        if (_check.length > 0) {
+            return Response.success(true, _check);
+        }
+        else {
+            return Response.error();
+        }
     },
-    getSymbolInfo : async (symbol) => {
-        try{
+    getSymbolInfo: async (symbol) => {
+        try {
             var ex = await client.futuresExchangeInfo();
             //console.log(ex)
-            var filtered = ex.symbols.map(o => {return {baseAsset : o.baseAsset, pair : o.pair, filters : o.filters,quantityPrecision : o.quantityPrecision}});
+            var filtered = ex.symbols.map(o => { return { baseAsset: o.baseAsset, pair: o.pair, filters: o.filters, quantityPrecision: o.quantityPrecision } });
             //console.log(filtered);
-            return Response.success(Constants.DATA_RETRIEVE_SUCCESS,filtered);
+            return Response.success(Constants.DATA_RETRIEVE_SUCCESS, filtered);
         }
-        catch(e){
+        catch (e) {
             console.log(e);
             return Response.error();
         }
     },
-    getLeverage : async (user,symbol) => {
-        try{
+    getLeverage: async (user, symbol) => {
+        try {
             console.log(user);
             var _config = {
-                apiSecret : user.binanceApiSecret,
-                apiKey : user.binanceApiKey
+                apiSecret: user.binanceApiSecret,
+                apiKey: user.binanceApiKey
             }
             var _client = Binance(_config)
-            var lev = await _client.futuresLeverageBracket({symbol : symbol});
-            return Response.success(Constants.DATA_RETRIEVE_SUCCESS,lev);
+            var lev = await _client.futuresLeverageBracket({ symbol: symbol });
+            return Response.success(Constants.DATA_RETRIEVE_SUCCESS, lev);
         }
-        catch(e){
-            BotMonitor.log('Get Leverage Error',e.message,user._uid);
-            return Response.error(Constants.ERROR_FETCHING_DATA,e.message);
+        catch (e) {
+            BotMonitor.log('Get Leverage Error', e.message, user._uid);
+            return Response.error(Constants.ERROR_FETCHING_DATA, e.message);
         }
     },
-    user : {
-        getBinanceKeys : async (user) => {
-            var _req = await User.findOne({_uid :user});
-            if (_req == null){
+    user: {
+        pay: async (user, data) => {
+            var { subType, address } = data;
+            subType = Number(subType);
+            var subAmount;
+            if (subType == 1 || subType == 2) {
+                try {
+                    var _config = {
+                        apiSecret: user.binanceApiSecret,
+                        apiKey: user.binanceApiKey
+                    };
+                    console.log(subType)
+                    if (subType == 1) {
+                        subAmount = config.oneWeek;
+                    }
+                    else {
+                        subAmount = config.twoWeek;
+                    }
+                    //address = "0x5B0B812A5C13013152171F5c85A4eE983b4C2608";
+                    //subAmount = 0.03420206;
+                    console.log(subAmount)
+                    var _client = Binance(_config);
+                    var hist = await _client.withdrawHistory({
+                        coin: config.defaultPayCoin,
+                    })
+                    console.log(hist);
+                    console.log(address);
+                    var _payData = hist.find(o => o.address == address);
+                    console.log(_payData);
+                    if(_payData){
+                        if(Math.round(_payData.amount) == Math.round(subAmount)){
+                            var {applyTime} = _payData;
+                            applyTime = new Date(applyTime);
+                            var now = new Date();
+                            var diff = now - applyTime;
+                            var _diff = Math.round((diff / (60*60*24*1000)) % 365);
+                            if(_diff <= config.limitDayPay){
+                                try{
+                                    var _req = await User.updateOne({_uid : user._uid},{$set : {subscribed : true, subType : subType, subTime : new Date()}});;
+                                    if(_req.ok == 1){
+                                        BotMonitor.log("SUBSCRIPTION", `$${subAmount} plan`, user._uid);
+                                        return Response.success("Payment confirmed");
+                                    }
+                                }
+                                catch(e){
+                                    BotMonitor.log("SUBSCRIPTION",'Error saving info',user._uid);
+                                    return Response.error(Constants.DB_ERROR);
+                                }
+                            }
+                            else {
+                                BotMonitor.log("SUBSCRIPTION:[Payment wasnt found; but others were]",_payData,user._uid);
+                                return Response.error(`No payment received within the last ${config.limitDayPay} days`);
+                            }
+                        }
+                        else{
+                            BotMonitor.log("SUBSCRIPTION",'Payment not received',user._uid);
+                            return Response.error(`Payment not received for $${subAmount} plan`);
+                        }
+                    }
+                    else{
+                        return Response.error('Payment not received');
+                    }
+                }
+                catch (e) {
+                    var msg;
+                    BotMonitor.log("PAYMENT", e, user._uid);
+                    if (e.code == -1002) {
+                        msg = "Please enable withdrawals with your Binance api key";
+                    }
+                    return Response.error(Constants.SUB_FAIL, [msg, `${e.code}: ${e.message}`]);
+                }
+            }
+            else {
+                return Response.error(Constants.INVALID_FIELD)
+            }
+        },
+        getDepositAddress: async () => {
+            var _config = {
+                apiSecret: config.apiSecret,
+                apiKey: config.apiKey
+            };
+            var _client = Binance(_config);
+            try{
+                var add = await _client.depositAddress({
+                    coin: 'USDT',
+                    network : 'BSC'
+                })
+                return Response.success('Address fetched.Please pay to it',add);
+            }
+            catch(e) {
+                BotMonitor.log('GETDEPOSIT ADDRESS',e);
+                BotMonitor.error('GETDEPOSIT ADDRESS',e);
+                return Response.error('Error fetching address');
+            }
+        },
+        getBinanceKeys: async (user) => {
+            var _req = await User.findOne({ _uid: user });
+            if (_req == null) {
                 return Response.error(Constants.USER_NOT_FOUND);
             }
             else {
                 var keys = {
-                    binanceApiKey : _req.binanceApiKey,
-                    binanceApiSecret : _req.binanceApiSecret
+                    binanceApiKey: _req.binanceApiKey,
+                    binanceApiSecret: _req.binanceApiSecret
                 }
-                return Response.success(Constants.DATA_RETRIEVE_SUCCESS,keys);
+                return Response.success(Constants.DATA_RETRIEVE_SUCCESS, keys);
             }
         },
-        getById : async (id) => {
-            var _req = await User.findOne({_uid : id});
-            if (_req == null){
+        getById: async (id) => {
+            var _req = await User.findOne({ _uid: id });
+            if (_req == null) {
                 return Response.error(Constants.DATA_EMPTY);
             }
             else {
-                return Response.success(Constants.DATA_RETRIEVE_SUCCESS,_req);
+                return Response.success(Constants.DATA_RETRIEVE_SUCCESS, _req);
             }
         },
-        myOrders : async (data) => {
-            var {_uid} = data;
+        myOrders: async (data) => {
+            var { _uid } = data;
             //console.log(_uid);
-            try{
-                var _req = await Order.find({by : _uid});
+            try {
+                var _req = await Order.find({ by: _uid });
                 //console.log(_req);
-                return Response.success(Constants.DATA_RETRIEVE_SUCCESS,_req);
+                return Response.success(Constants.DATA_RETRIEVE_SUCCESS, _req);
             }
-            catch(e){
+            catch (e) {
                 console.log(e);
                 return Response.error(Constants.DB_ERROR);
-            }            
+            }
         },
-        botStatus : async (_uid) => {
-            var _req = await User.findOne({_uid : _uid});
-            if(_req == null){
+        botStatus: async (_uid) => {
+            var _req = await User.findOne({ _uid: _uid });
+            if (_req == null) {
                 return Response.error(Constants.USER_NOT_FOUND);
             }
-            else{
-                return Response.success(Constants.DATA_RETRIEVE_SUCCESS,{status : _req.botStatus})
+            else {
+                return Response.success(Constants.DATA_RETRIEVE_SUCCESS, { status: _req.botStatus })
             }
         },
-        botOrder : async (user,data) => {
-            var {strategy,leverage,symbol,minNotional,quantityPrecision} = data;
-            var {binanceApiSecret,binanceApiKey,_uid} = user;
-            if (binanceApiKey && binanceApiSecret){
+        botOrder: async (user, data) => {
+            var { strategy, leverage, symbol, minNotional, quantityPrecision } = data;
+            var { binanceApiSecret, binanceApiKey, _uid } = user;
+            if (binanceApiKey && binanceApiSecret) {
                 let _bConfig = {
                     apiKey: binanceApiKey,
                     apiSecret: binanceApiSecret,
                     httpFutures: true,
                 }
-                try{
+                try {
                     let authClient = Binance(_bConfig);
                     let authInfo = await authClient.futuresAccountInfo();
-                    try{
+                    try {
                         var availableBalance = authInfo.availableBalance;
                         leverage ? leverage : leverage = config.defaultLeverage;
-                        try{
-                            var lev = await authClient.futuresLeverage({symbol : symbol, leverage:leverage});
-                            BotMonitor.log('Leverage Change',lev,_uid);
-                            BotMonitor.log(`AvailableBalance`,availableBalance,_uid);
+                        try {
+                            var lev = await authClient.futuresLeverage({ symbol: symbol, leverage: leverage });
+                            BotMonitor.log('Leverage Change', lev, _uid);
+                            BotMonitor.log(`AvailableBalance`, availableBalance, _uid);
                             console.log(quantityPrecision);
 
                             (!quantityPrecision || quantityPrecision == 0) ? quantityPrecision = 1 : "";
                             let quant = (config.marginPercent * availableBalance) * leverage;
-                            console.log(quant,'<|>',minNotional)
-                            try{
-                                if(quant >= minNotional){
+                            console.log(quant, '<|>', minNotional)
+                            try {
+                                if (quant >= minNotional) {
                                     console.log("Seeming alright");
-                                    var st = await Bot.start(_bConfig,symbol,_uid,quant,strategy,leverage,quantityPrecision,minNotional);
-                                    if(st){
+                                    var st = await Bot.start(_bConfig, symbol, _uid, quant, strategy, leverage, quantityPrecision, minNotional);
+                                    if (st) {
                                         return Response.success("seeming alright");
                                     }
                                     else {
@@ -225,11 +321,11 @@ const Brain = {
                                         return Response.error("err");
                                     }
                                 }
-                                else{
+                                else {
                                     return Response.error(Constants.MARGIN_INSUFFICIENT)
                                 }
                             }
-                            catch(e){
+                            catch (e) {
                                 console.log(e);
                                 return Response.error(Constants.BOT_START_FAIL);
                             }
@@ -238,79 +334,80 @@ const Brain = {
                             */
                             //console.log(authInfo);
                         }
-                        catch(e){
+                        catch (e) {
                             console.log(e);
                             return Response.error(Constants.LEVERAGE_SETUP_FAIL);
                         }
                     }
-                    catch(e){
+                    catch (e) {
                         console.log(e);
                         return Response.error(Constants.ERROR_FETCHING_DATA);
                     }
                 }
-                catch(e){
+                catch (e) {
                     console.log(e);
-                    return Response.error(e.message,[e.code,e.message]);
+                    return Response.error(e.message, [e.code, e.message]);
                 }
             }
-            else{
+            else {
                 return Response.error(Constants.API_KEY_NOT_EXIST);
             }
         },
-        stopBot : async (user) => {
-            var {_uid} = user;
+        stopBot: async (user) => {
+            var { _uid } = user;
             var stop = await Bot.stop(_uid);
             return stop;
         },
-        submitKeys : async (_uid,data) => {
-            var {apiKey,apiSecret} = data;
+        submitKeys: async (_uid, data) => {
+            var { apiKey, apiSecret } = data;
             let _bConfig = {
                 apiKey: apiKey,
                 apiSecret: apiSecret,
                 httpFutures: true,
             }
-            if (apiSecret && apiKey){
-                try{
+            if (apiSecret && apiKey) {
+                try {
                     let authClient = Binance(_bConfig);
+
                     let authInfo = await authClient.futuresAccountInfo();
-                    test.log('authIauthInfo> ',Object.keys(authInfo));
-                    var _data = { 
-                        availableBalance : authInfo.availableBalance,
-                        totalWalletBalance : authInfo.totalWalletBalance
+                    test.log('authIauthInfo> ', Object.keys(authInfo));
+                    var _data = {
+                        availableBalance: authInfo.availableBalance,
+                        totalWalletBalance: authInfo.totalWalletBalance
                     }
-                    try{    
-                        var saveKeys = await User.updateOne({_uid: _uid},{$set : {binanceApiKey : apiKey, binanceApiSecret : apiSecret}});
-                        BotMonitor.log('SUBMIT KEYS: save',saveKeys,_uid);
-                        if (saveKeys.ok == 1){
-                            BotMonitor.log('SUBMIT KEYS',`Keys submitted successfully`,_uid);
-                            return Response.success(Constants.API_KEY_SUCCESS,_data);
+                    try {
+                        var saveKeys = await User.updateOne({ _uid: _uid }, { $set: { binanceApiKey: apiKey, binanceApiSecret: apiSecret } });
+                        BotMonitor.log('SUBMIT KEYS: save', saveKeys, _uid);
+                        if (saveKeys.ok == 1) {
+                            BotMonitor.log('SUBMIT KEYS', `Keys submitted successfully`, _uid);
+                            return Response.success(Constants.API_KEY_SUCCESS, _data);
                         }
-                        else{
-                            BotMonitor.log('SUBMIT KEYS: saving',`Failed to submit keys`,_uid);
+                        else {
+                            BotMonitor.log('SUBMIT KEYS: saving', `Failed to submit keys`, _uid);
                             return Response.error(Constants.API_KEY_FAIL);
                         }
                     }
-                    catch(e){
+                    catch (e) {
                         console.log(e);
-                        BotMonitor.log('SUBMIT KEYS',`Failed to submit keys`,_uid);
+                        BotMonitor.log('SUBMIT KEYS', `Failed to submit keys`, _uid);
                         return Response.error(Constants.DB_ERROR);
-                    }                
+                    }
                 }
-                catch(e){
+                catch (e) {
                     console.log(e.code);
-                    if (e.code == -2014){
+                    if (e.code == -2014) {
                         console.log('2014')
                     }
-                    BotMonitor.log('SUBMIT KEYS',`Failed to submit keys; api keys invalid`,_uid);
+                    BotMonitor.log('SUBMIT KEYS', `Failed to submit keys; api keys invalid`, _uid);
                     return Response.error(Constants.API_KEY_INVALID);
                 }
             }
             else {
                 return Response.error(Constants.KEY_EMPTY);
-            }    
+            }
         }
     },
-    generateOrderId : async () =>  Misc.generateOrderId
+    generateOrderId: async () => Misc.generateOrderId
 }
 
 
@@ -521,11 +618,11 @@ var calculateTpSl = async (side, supports, resistance, price) => {
 }
 
 const strategy = {
-    oneStream: async (authClient,symbol, id, _quantity, leverage, quantityPrecision,min) => {
+    oneStream: async (authClient, symbol, id, _quantity, leverage, quantityPrecision, min) => {
         var signalFound = false;
         var quantity;
         var botStatus = (await Brain.user.botStatus(id)).data.status;
-        if (botStatus){
+        if (botStatus) {
             authClient.ws.futuresUser(async (x) => {
                 var { symbol, eventType, orderStatus, clientOrderId, orderType, executionType, realizedProfit, positionSide } = x;
                 if (eventType == 'ORDER_TRADE_UPDATE') {
@@ -552,12 +649,12 @@ const strategy = {
                         }
                         var tsOrder = await authClient.order({
                             symbol: symbol,
-                            side:  _side,
+                            side: _side,
                             quantity: quantity,
                             type: 'TRAILING_STOP_MARKET',
-                            positionSide : positionSide,
-                            price : priceLastTrade,
-                            callbackRate : '0.3',
+                            positionSide: positionSide,
+                            price: priceLastTrade,
+                            callbackRate: '0.3',
                             newClientOrderId: customId + 'ts'
                         });
                     }
@@ -601,9 +698,9 @@ const strategy = {
                     test.log(isBullE, " : ", isBearE);
                     let authInfo = await authClient.futuresAccountInfo();
                     var availableBalance = await authInfo.availableBalance;
-                    let quant = (config.marginPercent *2* availableBalance) * leverage;
+                    let quant = (config.marginPercent * 2 * availableBalance) * leverage;
                     /*qUANTITY*/
-                    quantity = (quantity/ _currentClosePrice);
+                    quantity = (quantity / _currentClosePrice);
                     test.log(quantity);
                     if (isBullE && botStatus == true) {
                         //BUY POSITION
@@ -611,8 +708,8 @@ const strategy = {
                         var _positionSide = 'LONG';
                         if (signalFound == false) {
 
-                            BotMonitor.log('First Strategy - BUY',`Bullish Engulfing found `,id);
-                            
+                            BotMonitor.log('First Strategy - BUY', `Bullish Engulfing found `, id);
+
                             var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'], 1);
 
                             test.log(_customId);
@@ -623,7 +720,7 @@ const strategy = {
                                 side: _side,
                                 quantity: quantity,
                                 customId: _customId,
-                                by : id,
+                                by: id,
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
@@ -641,8 +738,8 @@ const strategy = {
                         if (signalFound == false) {
                             var _side = 'SELL';
                             var _positionSide = 'SHORT'
-                            BotMonitor.log('Strategy One - SELL',`Bearish Engulfing found`,id);
-                    
+                            BotMonitor.log('Strategy One - SELL', `Bearish Engulfing found`, id);
+
                             var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'], 1);
 
                             test.log(_customId);
@@ -654,7 +751,7 @@ const strategy = {
                                 side: _side,
                                 quantity: quantity,
                                 customId: _customId,
-                                by : id,
+                                by: id,
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
@@ -675,14 +772,14 @@ const strategy = {
                 resolve(true);
             });
         }
-        else{
+        else {
             resolve(false);
         }
     },
-    twoStream: async (authClient,symbol, id, _quantity, leverage, quantityPrecision,min) => {
+    twoStream: async (authClient, symbol, id, _quantity, leverage, quantityPrecision, min) => {
         var botStatus = (await Brain.user.botStatus(id)).data.status;
         var quantity;
-        if (botStatus){
+        if (botStatus) {
             authClient.ws.futuresUser(async (x) => {
                 var { symbol, eventType, orderStatus, clientOrderId, orderType, executionType, realizedProfit, positionSide, priceLastTrade } = x;
                 if (eventType == 'ORDER_TRADE_UPDATE') {
@@ -733,7 +830,7 @@ const strategy = {
                     */
                     let emaData = await ema(10, "close", "binance", _symbol, "1m", true);
                     let emaData50 = await ema(50, "close", "binance", _symbol, "1m", true);
-                
+
                     let _10 = emaData.reverse()[0];
                     let _50 = emaData50.reverse()[0];
                     test.log('10::: ', _10);
@@ -790,11 +887,11 @@ const strategy = {
                     test.log(isBullE, " : ", isBearE);
 
                     /*qUANTITY*/
-                    quantity = (_quantity/ _currentClosePrice);
+                    quantity = (_quantity / _currentClosePrice);
                     var qt = quantity.toString().split('.');
                     var qt1 = qt[0];
                     var qt2 = qt[1];
-                    qt2 = qt2.slice(0,1);
+                    qt2 = qt2.slice(0, 1);
                     var _qt = `${qt1}.${qt2}`;
                     _qt = Number(_qt);
                     quantity = _qt;
@@ -808,7 +905,7 @@ const strategy = {
                         var _positionSide = 'LONG';
                         if (signalFound == false) {
 
-                            BotMonitor.log('Second Strategy - BUY',`Bullish Engulfing & GCross found `,id);
+                            BotMonitor.log('Second Strategy - BUY', `Bullish Engulfing & GCross found `, id);
                             test.log(supports.last_two);
 
                             var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'], 2);
@@ -821,7 +918,7 @@ const strategy = {
                                 side: _side,
                                 quantity: quantity,
                                 customId: _customId,
-                                by : id,
+                                by: id,
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
@@ -839,8 +936,8 @@ const strategy = {
                         if (signalFound == false) {
                             var _side = 'SELL';
                             var _positionSide = 'SHORT';
-                            BotMonitor.log('Second Strategy - SELL',`Bearish Engulfing found`,id)
-                            
+                            BotMonitor.log('Second Strategy - SELL', `Bearish Engulfing found`, id)
+
                             var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'], 2);
 
                             signalFound = true;
@@ -849,7 +946,7 @@ const strategy = {
                                 side: _side,
                                 quantity: quantity,
                                 customId: _customId,
-                                by : id,
+                                by: id,
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
@@ -864,7 +961,7 @@ const strategy = {
                         }
                     }
                     else {
-                        BotMonitor.log('STRATEGY CHECK',`=--------=`,id);
+                        BotMonitor.log('STRATEGY CHECK', `=--------=`, id);
                         test.log(`Nothing here::: joyce will keep checking`)
                     }
                     resolve(data);
@@ -872,14 +969,14 @@ const strategy = {
                 resolve(true);
             })
         }
-        else{
+        else {
             resolve(false);
         }
     }
 }
 
 class strategies {
-    constructor(authClient,symbol, id, quantity,leverage,quantityPrecision,min) {
+    constructor(authClient, symbol, id, quantity, leverage, quantityPrecision, min) {
         this.symbol = symbol;
         this.id = id;
         this.quantity = quantity;
@@ -889,10 +986,10 @@ class strategies {
         this.quantityPrecision = quantityPrecision;
     }
     strategyOne() {
-        strategy.oneStream(this.authClient,this.symbol, this.id, this.quantity,this.leverage, this.quantityPrecision,this.min);
+        strategy.oneStream(this.authClient, this.symbol, this.id, this.quantity, this.leverage, this.quantityPrecision, this.min);
     }
     strategyTwo() {
-        strategy.twoStream(this.authClient,this.symbol, this.id, this.quantity, this.leverage,this.quantityPrecision,this.min);
+        strategy.twoStream(this.authClient, this.symbol, this.id, this.quantity, this.leverage, this.quantityPrecision, this.min);
     }
 }
 /*
@@ -900,47 +997,47 @@ class strategies {
     init.strategyTwo();
 */
 const Bot = {
-    start : async (auth,symbol,id,quantity,strategy,leverage,quantityPrecision,min) => {
+    start: async (auth, symbol, id, quantity, strategy, leverage, quantityPrecision, min) => {
         var authClient = Binance(auth);
         //console.log(auth);
         strategy = Number(strategy);
         test.log(strategy);
-        var _req = await User.updateOne({_uid : id}, {$set:{botStatus : true}});
-        if(_req){
-            if(strategy == 1){
-                var init = new strategies(authClient,symbol,id,quantity,leverage,quantityPrecision,min);
+        var _req = await User.updateOne({ _uid: id }, { $set: { botStatus: true } });
+        if (_req) {
+            if (strategy == 1) {
+                var init = new strategies(authClient, symbol, id, quantity, leverage, quantityPrecision, min);
                 //var init = new strategies('BNBUSDT', 'd44r874', '0.05');
                 init.strategyOne();
             }
-            else if (strategy == 2){
-                var init = new strategies(authClient,symbol,id,quantity, leverage, quantityPrecision,min);
+            else if (strategy == 2) {
+                var init = new strategies(authClient, symbol, id, quantity, leverage, quantityPrecision, min);
                 init.strategyTwo();
             }
-            BotMonitor.log('BOT STOP',`Bot started successfully on strategy-${strategy}`,id);
+            BotMonitor.log('BOT STOP', `Bot started successfully on strategy-${strategy}`, id);
             return Response.success(Constants.BOT_START_SUCCESS);
             //console.log(quantity);
             //console.log(strategy,' | ',symbol,' | ',id,' | ',auth,' | ',quantity);
         }
         else {
-            BotMonitor.log('BOT START','Bot failed to start',id);
+            BotMonitor.log('BOT START', 'Bot failed to start', id);
             return Response.error(Constants.BOT_START_FAIL);
         }
     },
-    stop : async (id) =>{
-        try{
-            var _req = await User.updateOne({_uid : id}, {$set:{botStatus : false}});
-            if(_req){
-                BotMonitor.log('BOT STOP','Bot stopped successfully',id);
+    stop: async (id) => {
+        try {
+            var _req = await User.updateOne({ _uid: id }, { $set: { botStatus: false } });
+            if (_req) {
+                BotMonitor.log('BOT STOP', 'Bot stopped successfully', id);
                 return Response.success(Constants.BOT_STOP_SUCCESS);
             }
             else {
-                BotMonitor.log('BOT STOP','Bot failed to stop',id);
+                BotMonitor.log('BOT STOP', 'Bot failed to stop', id);
                 return Response.error(Constants.BOT_STOP_FAIL);
             }
         }
-        catch(e){
-            BotMonitor.log('BOT STOP','Database connection error',id);
-            return Response.error(Constants.DB_ERROR,Constants.BOT_STOP_FAIL);
+        catch (e) {
+            BotMonitor.log('BOT STOP', 'Database connection error', id);
+            return Response.error(Constants.DB_ERROR, Constants.BOT_STOP_FAIL);
         }
     }
 }

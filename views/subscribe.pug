@@ -1,0 +1,112 @@
+head 
+    link(rel="stylesheet", href="./css/sub.css")
+include top 
+    body.rocket-bg
+        .h-pail.h-card
+            h1.h-card.h-bg-purple.h-text-white.h-text-bold Rocket 125x
+            br
+            div
+                .row.h-bg-white.h-card-sm.h-padding-1
+                    div.h-col-3.h-bg-white.h-card-sm
+                        button.h-button.h-text.h-bg-lightblue.h-shadow-lightblue.h-text-white.h-card-1.h-font-tiny-2(onclick="switchTo('1')") Active Subscription
+                        br
+                        br
+                        button.h-button.h-text.h-bg-lightgreen.h-shadow-lightgreen.h-text-white.h-card-1.h-font-tiny-2(onclick="switchTo('2')") Subscribe
+                        br
+                        br
+                        button.h-button.h-text.h-card-1.h-text-white.h-bg-yellow.h-shadow-yellow.h-font-tiny-2(onclick = "logout()") Logout
+
+                .h-card-sm
+                    div.h-dash-left(style="padding-left : 5px")
+                        div#subscribe.view.h-anim-rollin.h-hide(action="POST")
+                            .h-card-sm.h-bg-white
+                                h5.h-text-bold.h-margin-0 Select your subscription
+                                i.h-text.h-font-tiny Funds should be sent from your binance wallet. Please confirm as soon as payment is made
+                            br
+                            if data 
+                                if data.subscribed !== true
+                                    .div
+                                        div.h-text-center
+                                            h5.h-text-bold.h-text-white.h-card-sm.h-bg-lightgreen.h-shadow-lightgreen Emerald
+                                            div.h-card-sm.h-bg-lightgreen
+                                                p.h-text-bold.h-font-tiny.h-text-white Full Access
+                                                p.h-text-bold.h-font-tiny.h-text-white Huge Profits In All Markets
+                                                p.h-text-bold.h-font-tiny.h-text-white Fully Automated Futures Trading 
+                                                p.h-text-bold.h-font-tiny.h-text-white 95% Accuracy
+                                                p.h-text-bold.h-font-tiny.h-text-white Can Make 75% Profit in a Single Trade 
+                                                p.h-text-bold.h-font-tiny-2.h-text-white Duration : 1 Week
+                                                p.h-text-bold.h-text-white $100
+                                                button.h-button.h-bg-white.h-shadow-white.h-text-lightgreen.h-text-bold(onclick="payPop('1')") Pay
+                                        div.h-text-center
+                                            h5.h-text-bold.h-text-white.h-card-sm.h-bg-purple.h-shadow-purple Onyx
+                                            div.h-card-sm.h-bg-purple
+                                                p.h-text-bold.h-font-tiny.h-text-white Full Access
+                                                p.h-text-bold.h-font-tiny.h-text-white Huge Profits In All Markets
+                                                p.h-text-bold.h-font-tiny.h-text-white Fully Automated Futures Trading 
+                                                p.h-text-bold.h-font-tiny.h-text-white 95% Accuracy
+                                                p.h-text-bold.h-font-tiny.h-text-white Can Make 75% Profit in a Single Trade 
+                                                p.h-text-bold.h-font-tiny-2.h-text-white Duration : 2 Weeks
+                                                p.h-text-bold.h-text-white $180
+                                                button.h-button.h-bg-white.h-shadow-white.h-text-purple.h-text-bold(onclick="payPop('2')") Pay
+                                else 
+                                    if data.subType == '1'
+                                        p.h-text-bold.h-bg-lightgreen.h-shadow-lightgreen.h-text-white.h-card-1 Emerald 
+                                        p.h-text.h-text-lightgreen You are currently on the emerald plan (1 week)
+                                        p.h-text 00 left
+                                    else if data.subType == '2'
+                                        p.h-text-bold.h-bg-purple.h-shadow-purple.h-text-white.h-card-1 Onyx 
+                                        p.h-text.h-text-purple You are currently on the onyx plan (2 weeks)
+                                        p.h-text 00left
+                            else 
+                                .div
+                                    div.h-text-center
+                                        h5.h-text-bold.h-text-white.h-card-sm.h-bg-lightgreen.h-shadow-lightgreen Emerald
+                                        div.h-card-sm.h-bg-lightgreen
+                                            p.h-text-bold.h-font-tiny.h-text-white Full Access
+                                            p.h-text-bold.h-font-tiny.h-text-white Huge Profits In All Markets
+                                            p.h-text-bold.h-font-tiny.h-text-white Fully Automated Futures Trading 
+                                            p.h-text-bold.h-font-tiny.h-text-white 95% Accuracy
+                                            p.h-text-bold.h-font-tiny.h-text-white Can Make 75% Profit in a Single Trade 
+                                            p.h-text-bold.h-font-tiny-2.h-text-white Duration : 1 Week
+                                            p.h-text-bold.h-text-white $100
+                                            button.h-button.h-bg-white.h-shadow-white.h-text-lightgreen.h-text-bold(onclick="payPop('1')") Pay
+                                    div.h-text-center
+                                        h5.h-text-bold.h-text-white.h-card-sm.h-bg-purple.h-shadow-purple Onyx
+                                        div.h-card-sm.h-bg-purple
+                                            p.h-text-bold.h-font-tiny.h-text-white Full Access
+                                            p.h-text-bold.h-font-tiny.h-text-white Huge Profits In All Markets
+                                            p.h-text-bold.h-font-tiny.h-text-white Fully Automated Futures Trading 
+                                            p.h-text-bold.h-font-tiny.h-text-white 95% Accuracy
+                                            p.h-text-bold.h-font-tiny.h-text-white Can Make 75% Profit in a Single Trade 
+                                            p.h-text-bold.h-font-tiny-2.h-text-white Duration : 2 Weeks
+                                            p.h-text-bold.h-text-white $180
+                                            button.h-button.h-bg-white.h-shadow-white.h-text-purple.h-text-bold(onclick="payPop('2')") Pay
+                            
+
+                        div#active.view.h-hide
+                            if data
+                                if data.subscribed == true
+                                    if data.subType == '1'
+                                        p.h-text-bold.h-bg-lightgreen.h-shadow-lightgreen.h-text-white.h-card-1 Emerald 
+                                        p.h-text.h-text-lightgreen You are currently on the emerald plan (1 week)
+                                        p.h-text 00 left
+                                    else if data.subType == '2'
+                                        p.h-text-bold.h-bg-purple.h-shadow-purple.h-text-white.h-card-1 Onyx 
+                                        p.h-text.h-text-purple You are currently on the onyx plan (2 weeks)
+                                        p.h-text 00left
+                                else 
+                                    i.h-text-bold.h-card-sm.h-bg-white You have no current subscription.
+                        div#confirm.h-hide.sub-pop.h-anim-rollin
+                            .h-center.h-bg-white.h-shadow-purple.h-outline-purple.h-card
+                                span.h-text-white.h-card-1.h-bg-red.h-font-tiny.h-right(onclick="closePop()") Close
+                                .h-text-bold 
+                                    span#plan 
+                                div
+                                    p.h-text Pay to this address 
+                                    p#address.h-outline-purple.h-card-1.h-text-bold
+                                    span
+                                        a.h-text(href="")#addressUrl
+                                    input#subType(hidden)
+                                    button#confirmPay.h-button.h-bg-lightgreen.h-shadow-green.h-text-white.h-text-bold(disabled,onclick="pay()") Confirm Payment
+
+script(type="text/javascript",src='/js/sub.js')

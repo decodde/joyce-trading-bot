@@ -22,7 +22,10 @@ const Constants = {
     BOT_START_SUCCESS : "Bot started successfully",
     BOT_STOP_FAIL : " Error stopping bot",
     BOT_STOP_SUCCESS : " Bot stopped successfully",
-    USER_NOT_FOUND : "User not found"
+    USER_NOT_FOUND : "User not found",
+    SUB_SUCCESS : "Payment in progress",
+    SUB_FAIL : "Payment failed",
+    INVALID_FIELD : "Fields are invalid"
 }
 
 exports.Constants = Constants;

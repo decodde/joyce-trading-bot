@@ -15,15 +15,35 @@ const RouteControl = {
     },
     page : {
         login : async (req,res) => {
-            res.render('login');
+            var user = req.session.user;
+            if(user){
+                res.status = 302;
+                res.redirect("/mini");
+            }
+            else{
+                res.render('login');
+            }
         },
         onboard : async (req,res) => {
-            res.render('signup');
+            var user = req.session.user;
+            if(user){
+                res.status = 302;
+                res.redirect("/mini");
+            }
+            else{
+                res.render('signup');
+            }
         },
         dashboard : async (req,res) => {
             //console.log(req.session.user);
             var orders =  await Brain.user.myOrders(req.session.user);
             res.render('dashboard',{user : req.session.user,orders : orders});
+        },
+        subscribe : async (req,res) => {
+            var user = req.session.user;
+        //console.log(symbol);
+            var _data = await Brain.user.getById(user._uid);
+            res.render("subscribe", {data : _data.data});
         }
     },
     login : async (req,res) => {
@@ -39,7 +59,12 @@ const RouteControl = {
             }
             else if(!user.admin){
                 res.status = 302;
-                res.redirect("/mini");
+                if(user.subscribed == true){
+                    res.redirect("/mini");
+                }
+                else {
+                    res.redirect("/subscribe")
+                }
             } 
             else{
                 res.redirect("start");
@@ -65,14 +90,20 @@ const RouteControl = {
         var user = req.session.user;
         var _sym = await Brain.getSymbolInfo();
         var _data = await Brain.user.getById(user._uid);
+        if(_data.data.subscribed == true){
+            res.render("minidash",{data : _data.data, symbols : _sym});
+        }
+        else{
+            res.status = 302;
+            res.redirect("/subscribe")
+        }
         console.log(_data.data)
-        res.render("minidash",{data : _data.data, symbols : _sym});
     },
     logout : async (req,res) => {
         var user = req.session.user;
-        if (user.__uid){
+        if (user._uid){
             req.session.destroy();
-            res.redirect('/');
+            res.json(Response.success());
         }
         else{
             res.json(Response.error("You are not logged in"));
@@ -88,7 +119,8 @@ const RouteControl = {
         var user = req.session.user;
         var {symbol} = req.body;
         //console.log(symbol);
-        var gt = await Brain.getLeverage(user,symbol);
+        var _data = await Brain.user.getById(user._uid);
+        var gt = await Brain.getLeverage(_data.data,symbol);
         res.json(gt);
     },
     stopBot : async (req,res) => {
@@ -98,8 +130,19 @@ const RouteControl = {
     },
     botOrder : async (req,res) => {
         let user = req.session.user;
-        var a = await Brain.user.botOrder(user,req.body);
+        var _data = await Brain.user.getById(user._uid);
+        var a = await Brain.user.botOrder(_data.data,req.body);
         res.json(a);
+    },
+    pay : async (req,res) => {
+        let user = req.session.user;
+        var _data = await Brain.user.getById(user._uid);
+        var a = await Brain.user.pay(_data.data,req.body);
+        res.json(a);
+    },
+    getDepositAddress :  async (req,res) => {
+        var dp =  await Brain.user.getDepositAddress();
+        res.json(dp);
     },
     submitKeys : async (req,res) => {
         var user = req.session.user;

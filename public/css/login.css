@@ -15,3 +15,6 @@
     background: -webkit-linear-gradient(to right, #F9D423, #FF4E50);
     background: linear-gradient(to right, #F9D423, #FF4E50); 
 }
+.rocket-bg{
+    background-image: url("../img/rocket125x.jpg");
+}
