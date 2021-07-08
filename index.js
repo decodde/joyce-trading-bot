@@ -53,6 +53,6 @@ app.post("/stopBot", RouteControl.auth, RouteControl.stopBot)
 
 
 
-app.listen(process.env.PORT||3030,async () => {
+app.listen(80,async () => {
     console.log("Great-Light Bot Running")
 })
