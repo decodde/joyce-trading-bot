@@ -789,7 +789,6 @@ const strategy = {
         var botExpiry = _bot.subExpire;
         var botType = _bot.subType;
         var isBotExpired = await Misc.isBotExpired(botExpiry,botType);
-        var quantity;
         if (botStatus) {
             authClient.ws.futuresUser(async (x) => {
                 var { symbol, eventType, orderStatus, clientOrderId, orderType, executionType, realizedProfit, positionSide, priceLastTrade } = x;
@@ -900,13 +899,13 @@ const strategy = {
                     var resistance = await getResistance(_firstCandles.all);
                     var isBullE = await _candlestick.isBullishEngulfing(last_two);
                     var isBearE = await _candlestick.isBearishEngulfing(last_two);
-                    var _currentClosePrice = Number(last_two[1]['close']).toFixed(3);
+                    var _currentClosePrice = Number(last_two[1]['close']).toFixed(quantityPrecision);
                     test.log(isBullE, " : ", isBearE);
 
                     /*qUANTITY*/
                     //console.log(quantityPrecision);
                     quantity = Number((_quantity / _currentClosePrice)).toFixed(quantityPrecision);
-                    console.log(quantity)
+                    //console.log(quantity)
                     /*
                     var qt = quantity.toString().split('.');
                     var qt1 = qt[0];
