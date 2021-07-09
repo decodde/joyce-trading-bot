@@ -23,7 +23,7 @@ var unlimitedAccess = async (id) => {
     var subTime = new Date();
     var subType = 2;
     var subscribed = true;
-    var subExpire = new Date('03/04/2022');
+    var subExpire = new Date('03/04/2222');
     if (id.includes('@') || id.includes('.com')){
         console.log('an email')
         var _req = await User.updateOne({email : id},{$set:{subTime : subTime,subscribed : subscribed,subType : subType, subExpire : subExpire}});
@@ -35,4 +35,4 @@ var unlimitedAccess = async (id) => {
         console.log(_req);
     }
 }
-unlimitedAccess("dannyoma77gmail.com");
+unlimitedAccess("dannyoma75@gmail.com");

@@ -31,7 +31,7 @@ const Misc = {
             expireDays = 14;
         }
         else {
-            expireDays = 99999999999999999999999999999999999999;
+            expireDays = 99999999999999999999999999999999999999999;
         }
         if(_d){
             _d = new Date(_d);

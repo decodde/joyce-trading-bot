@@ -788,6 +788,7 @@ const strategy = {
         var botStatus = _bot.status;
         var botExpiry = _bot.subExpire;
         var botType = _bot.subType;
+        var quantity;
         var isBotExpired = await Misc.isBotExpired(botExpiry,botType);
         if (botStatus) {
             authClient.ws.futuresUser(async (x) => {
