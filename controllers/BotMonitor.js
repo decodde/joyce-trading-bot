@@ -2,7 +2,7 @@
 
 const BotMonitor = {
     log : (from,msg,id) => {
-        console.log(`[${id}][${from}]:: `,msg);
+        console.log(`[${id}][${from}](@${new Date().toISOString()}):: `,msg);
     },
     error : () => {
 

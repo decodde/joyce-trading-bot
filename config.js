@@ -20,7 +20,8 @@ const config = {
     defaultPayAddress : '0xcaea7d5092252c214d0de373fd59a708fab9fdf5',
     oneWeek : 100,
     twoWeek : 180,
-    limitDayPay : 2
+    limitDayPay : 2,
+    callbackRate : '0.3'
 }
 //console.log(process.env.API_KEY)
 exports.config = config;

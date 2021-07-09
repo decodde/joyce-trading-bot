@@ -9,7 +9,6 @@ const { Misc } = require("./misc/Misc");
 const Binance = require("binance-api-node").default;
 const client = Binance();
 
-
 const api = require('@marcius-capital/binance-api');
 
 const ema = require('trading-indicator').ema;
@@ -93,7 +92,7 @@ const Brain = {
     getOrder: async (id) => {
         try {
             var _req = await Order.findOne({ customId: id });
-            console.log("id: ", id);
+            //console.log("id: ", id);
             if (_req == null) {
                 return Response.error(Constants.DATA_EMPTY);
             }
@@ -133,7 +132,7 @@ const Brain = {
     },
     getLeverage: async (user, symbol) => {
         try {
-            console.log(user);
+            //console.log(user);
             var _config = {
                 apiSecret: user.binanceApiSecret,
                 apiKey: user.binanceApiKey
@@ -153,29 +152,32 @@ const Brain = {
             subType = Number(subType);
             var subAmount;
             if (subType == 1 || subType == 2) {
+                var subExpire ;
                 try {
                     var _config = {
                         apiSecret: user.binanceApiSecret,
                         apiKey: user.binanceApiKey
                     };
-                    console.log(subType)
+                    //console.log(subType)
                     if (subType == 1) {
                         subAmount = config.oneWeek;
+                        subExpire = new Date(new Date().setDate(new Date().getDate() + 7));
                     }
                     else {
                         subAmount = config.twoWeek;
+                        subExpire = new Date(new Date().setDate(new Date().getDate() + 14));
                     }
                     //address = "0x5B0B812A5C13013152171F5c85A4eE983b4C2608";
                     //subAmount = 0.03420206;
-                    console.log(subAmount)
+                    //console.log(subAmount)
                     var _client = Binance(_config);
                     var hist = await _client.withdrawHistory({
                         coin: config.defaultPayCoin,
                     })
-                    console.log(hist);
-                    console.log(address);
+                    //console.log(hist);
+                    //console.log(address);
                     var _payData = hist.find(o => o.address == address);
-                    console.log(_payData);
+                   // console.log(_payData);
                     if(_payData){
                         if(Math.round(_payData.amount) == Math.round(subAmount)){
                             var {applyTime} = _payData;
@@ -185,7 +187,7 @@ const Brain = {
                             var _diff = Math.round((diff / (60*60*24*1000)) % 365);
                             if(_diff <= config.limitDayPay){
                                 try{
-                                    var _req = await User.updateOne({_uid : user._uid},{$set : {subscribed : true, subType : subType, subTime : new Date()}});;
+                                    var _req = await User.updateOne({_uid : user._uid},{$set : {subscribed : true, subType : subType, subTime : new Date(), subExpire : subExpire}});;
                                     if(_req.ok == 1){
                                         BotMonitor.log("SUBSCRIPTION", `$${subAmount} plan`, user._uid);
                                         return Response.success("Payment confirmed");
@@ -307,7 +309,7 @@ const Brain = {
                             BotMonitor.log(`AvailableBalance`, availableBalance, _uid);
                             console.log(quantityPrecision);
 
-                            (!quantityPrecision || quantityPrecision == 0) ? quantityPrecision = 1 : "";
+
                             let quant = (config.marginPercent * availableBalance) * leverage;
                             console.log(quant, '<|>', minNotional)
                             try {
@@ -655,7 +657,7 @@ const strategy = {
                             type: 'TRAILING_STOP_MARKET',
                             positionSide: positionSide,
                             price: priceLastTrade,
-                            callbackRate: '0.3',
+                            callbackRate: config.callbackRate,
                             newClientOrderId: customId + 'ts'
                         });
                     }
@@ -701,7 +703,8 @@ const strategy = {
                     var availableBalance = await authInfo.availableBalance;
                     let quant = (config.marginPercent * 2 * availableBalance) * leverage;
                     /*qUANTITY*/
-                    quantity = (quantity / _currentClosePrice);
+                    console.log(quantityPrecision);
+                    quantity = Number((_quantity / _currentClosePrice)).toFixed(quantityPrecision);
                     test.log(quantity);
                     if (isBullE && botStatus == true) {
                         //BUY POSITION
@@ -722,6 +725,7 @@ const strategy = {
                                 quantity: quantity,
                                 customId: _customId,
                                 by: id,
+                                time : new Date(),
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
@@ -754,6 +758,7 @@ const strategy = {
                                 quantity: quantity,
                                 customId: _customId,
                                 by: id,
+                                time : new Date(),
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
@@ -779,15 +784,20 @@ const strategy = {
         }
     },
     twoStream: async (authClient, symbol, id, _quantity, leverage, quantityPrecision, min) => {
-        var botStatus = (await Brain.user.botStatus(id)).data.status;
+        var _bot = (await Brain.user.botStatus(id)).data;
+        var botStatus = _bot.status;
+        var botExpiry = _bot.subExpire;
+        var botType = _bot.subType;
+        var isBotExpired = await Misc.isBotExpired(botExpiry,botType);
         var quantity;
         if (botStatus) {
             authClient.ws.futuresUser(async (x) => {
                 var { symbol, eventType, orderStatus, clientOrderId, orderType, executionType, realizedProfit, positionSide, priceLastTrade } = x;
                 if (eventType == 'ORDER_TRADE_UPDATE') {
                     var isStrategyTwo = clientOrderId.includes('rxTwo');
-                    var botStatus = (await Brain.user.botStatus(id)).data.status;
-                    if (orderStatus == 'FILLED' && orderType == 'MARKET' && executionType == 'TRADE' && realizedProfit == '0' && isStrategyTwo && botStatus == true) {
+                    var _bot = (await Brain.user.botStatus(id)).data;
+                    var botStatus = _bot.status;
+                    if (orderStatus == 'FILLED' && orderType == 'MARKET' && executionType == 'TRADE' && realizedProfit == '0' && isStrategyTwo && botStatus == true ) {
                         test.log("================================================================");
                         test.log('x:: ', x, '\n _____________________');
                         test.log(orderStatus, " |X| ", orderType);
@@ -810,7 +820,7 @@ const strategy = {
                             type: 'TRAILING_STOP_MARKET',
                             positionSide: positionSide,
                             price: priceLastTrade,
-                            callbackRate: '0.3',
+                            callbackRate: config.callbackRate,
                             newClientOrderId: customId + 'ts'
                         });
                         test.log(tsOrder);
@@ -873,7 +883,12 @@ const strategy = {
                         if (lastCandles.length == 3) {
                             lastCandles.shift();
                         }
-                        botStatus = (await Brain.user.botStatus(id)).data.status;
+                        var _bot = (await Brain.user.botStatus(id)).data;
+                        var botStatus = _bot.status;
+                        botExpiry = _bot.subExpire;
+                        botType = _bot.subType;
+                        isBotExpired = await Misc.isBotExpired(botExpiry,botType);
+
                         lastCandles.push(_candle);
                         signalFound = false;
                     }
@@ -889,7 +904,10 @@ const strategy = {
                     test.log(isBullE, " : ", isBearE);
 
                     /*qUANTITY*/
-                    quantity = (_quantity / _currentClosePrice);
+                    //console.log(quantityPrecision);
+                    quantity = Number((_quantity / _currentClosePrice)).toFixed(quantityPrecision);
+                    console.log(quantity)
+                    /*
                     var qt = quantity.toString().split('.');
                     var qt1 = qt[0];
                     var qt2 = qt[1];
@@ -897,11 +915,10 @@ const strategy = {
                     var _qt = `${qt1}.${qt2}`;
                     _qt = Number(_qt);
                     quantity = _qt;
-                    test.log(_qt);
-                    test.log(Number(_qt));
+                    */
                     test.log(quantity);
 
-                    if (isBullE && _upSignal && botStatus == true) {
+                    if (isBullE && _upSignal && botStatus == true && !isBotExpired) {
                         //BUY POSITION
                         var _side = 'BUY';
                         var _positionSide = 'LONG';
@@ -921,6 +938,7 @@ const strategy = {
                                 quantity: quantity,
                                 customId: _customId,
                                 by: id,
+                                time : new Date(),
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
@@ -934,7 +952,7 @@ const strategy = {
                             });
                         }
                     }
-                    else if (isBearE && _downSignal && botStatus == true) {
+                    else if (isBearE && _downSignal && botStatus == true && !isBotExpired) {
                         if (signalFound == false) {
                             var _side = 'SELL';
                             var _positionSide = 'SHORT';
@@ -949,6 +967,7 @@ const strategy = {
                                 quantity: quantity,
                                 customId: _customId,
                                 by: id,
+                                time : new Date(),
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);

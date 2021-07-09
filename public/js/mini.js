@@ -183,8 +183,9 @@ let symbolInfo = async () => {
                 }
             })
             var __sym = _sym[0];
+            console.log(__sym)
             var quantityPrecision = __sym.quantityPrecision;
-            console.log(quantityPrecision);
+            console.log('quant:>:  ',quantityPrecision);
             document.getElementById('quantityPrecision').value = quantityPrecision;
             var minNotional = __sym.filters.find(o=>o.filterType == 'MIN_NOTIONAL');
             document.getElementById('minNotional').value = minNotional.notional;

@@ -10,6 +10,7 @@ var user = new Schema({
     _uid : {type : String},
     subscribed : {type : Boolean, default : false},
     subTime : {type : Date},
-    subType : {type : Number}
+    subType : {type : Number},
+    subExpire : {type : Date}
 });
 module.exports=mongoose.model("User",user)

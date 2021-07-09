@@ -363,3 +363,36 @@ const strategy_two = async (symbol,id) => {
 /*
 strategy_one("BTCUSDT","43T2DS")
 */
+
+let _bConfig = {
+    apiKey: config.apiKey,
+    apiSecret: config.apiSecret,
+    httpFutures: true,
+}
+/*
+try {
+    let authClient = Binance(_bConfig);
+    let authInfo = await authClient.futuresAccountInfo();
+    try {
+        var availableBalance = authInfo.availableBalance;
+        leverage ? leverage : leverage = config.defaultLeverage;
+        try {
+            var lev = await authClient.futuresLeverage({ symbol: symbol, leverage: leverage });
+            console.log(quantityPrecision);
+
+            (!quantityPrecision || quantityPrecision == 0) ? quantityPrecision = 1 : "";
+            let quant = (config.marginPercent * availableBalance) * leverage;
+            console.log(quant, '<|>', minNotional)
+        }
+        catch(e){
+            console.log()
+        }
+    }
+    catch(e){
+
+    }
+}
+catch(e){
+
+}
+*/
