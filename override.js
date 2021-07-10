@@ -35,4 +35,26 @@ var unlimitedAccess = async (id) => {
         console.log(_req);
     }
 }
-unlimitedAccess("dannyoma75@gmail.com");
+
+var extraDate = async (d) => {
+    var _req = await User.find({subscribed : true});
+    _req.forEach(req => {
+        var _cTime = req.subTime;
+        var _subTime = _cTime + 1;
+        req.subTime = _subTime;
+        req.save();
+    })
+
+}
+
+var updateFields = async () => {
+    var fields = {
+        unpaidReferrals : 0,
+        paidReferrals : 0,
+        referredBy : 'rocket125x'
+    }
+    var _req = await User.updateMany({},{$set: fields});
+    console.log(_req);
+}
+//unlimitedAccess();
+updateFields();

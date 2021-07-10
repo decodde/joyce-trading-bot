@@ -8,9 +8,9 @@ const { Misc } = require("./misc/Misc");
 
 const Binance = require("binance-api-node").default;
 const client = Binance();
+var api = require('@marcius-capital/binance-api');
 
-const api = require('@marcius-capital/binance-api');
-
+const _EMA = require("@aduryagin/technical-indicators").EMA;
 const ema = require('trading-indicator').ema;
 var mongodbURL = "";
 const { testConsole: test } = require("../testConsole");
@@ -57,25 +57,41 @@ const Brain = {
         }
     },
     onboard: async (user) => {
-        var { email, password } = user;
+        var { email, password,code } = user;
         user.password = await Misc.hashPassword(password);
         user._uid = await Misc.generateId();
         user.subscribed = false;
-
-        var _req = await User.findOne({ email: email });
-        if (_req == null) {
-            try {
-                var _user = new User(user)
-                await _user.save();
-                
-                return Response.success(Constants.SIGNUP_SUCCESS,user);
-            }
-            catch (e) {
-                return Response.error(Constants.DB_ERROR);
-            }
+        var _codeReq = await User.findOne({_uid : code});
+        if(_codeReq == null){
+            return Response.error(Constants.REFERRAL_CODE_INVALID);      
         }
-        else {
-            return Response.error(Constants.EMAIL_EXISTS)
+        else{
+            user.referredBy = code;
+            user.paidReferrals = 0;
+            user.unpaidReferrals = 0;
+            var _req = await User.findOne({ email: email });
+            if (_req == null) {
+                try {
+                    var _user = new User(user);
+                    await _user.save();
+                    try {
+                        var _up = await User.updateOne({_uid : code},{$inc : {unpaidReferrals : 1}});
+                        BotMonitor.log("ONBOARD",`Updating unpaid referrals for ${code}`,"bot");
+                    }
+                    catch(e){
+                        BotMonitor.error("ONBOARD",`Error updating referrals for ${code}`);
+                    }
+                    BotMonitor.log("ONBOARD",`New signup by ${user.email} referred by ${code}:(${_codeReq.email})`,"bot");
+                    return Response.success(Constants.SIGNUP_SUCCESS,user);
+                }
+                catch (e) {
+                    BotMonitor.error("ONBOARD:",`DB error when onboarding ${user.email}`,user._uid)
+                    return Response.error(Constants.DB_ERROR);
+                }
+            }
+            else {
+                return Response.error(Constants.EMAIL_EXISTS)
+            }
         }
     },
     saveOrder: async (order) => {
@@ -97,6 +113,7 @@ const Brain = {
                 return Response.error(Constants.DATA_EMPTY);
             }
             else {
+
                 return Response.success(Constants.DATA_RETRIEVE_SUCCESS, { order: _req })
             }
         }
@@ -147,6 +164,40 @@ const Brain = {
         }
     },
     user: {
+        withdrawRefer : async (user) => {
+            try {
+                //console.log(user);
+                var _config = {
+                    apiSecret: user.binanceApiSecret,
+                    apiKey: user.binanceApiKey
+                }
+                
+                try{
+                    var _client = Binance(_config)
+                    var _add = await _client.depositAddress({coin : config.defaultPayCoin, network : 'BSC'});
+                    var _upd = await User.updateOne({_uid: user._uid},{$inc :{paidReferrals : user.unpaidReferrals, unpaidReferrals : -Number(user.unpaidReferrals)},$set : {unpaidReferrals : 0}});
+                    if(_upd.ok){
+                        //send email
+                        BotMonitor.log('Referral WIthdrawal',`by ${user.email}: ${user.unpaidReferrals}`,user._uid);
+                        var emailSend = await Misc.sendWithdrawMail(_add.address,user.email,user._uid,user.unpaidReferrals,_add.url);
+                        return Response.success(Constants.DATA_RETRIEVE_SUCCESS, _add);
+                    }
+                    else {
+                        BotMonitor.log('Referral WIthdrawal Error',`by ${user.email}: ${user.unpaidReferrals}`,user._uid);
+                        return Response.error(Constants.DB_ERROR);
+                    }
+                }
+                catch(e){
+                    BotMonitor.log('WithdrawError',e.message,user._uid);
+                    return Response.error(e.message);
+
+                }
+            }
+            catch (e) {
+                BotMonitor.log('WithdrawError', e.message, id);
+                return Response.error(Constants.ERROR_FETCHING_DATA, e.message);
+            }
+        },
         pay: async (user, data) => {
             var { subType, address } = data;
             subType = Number(subType);
@@ -236,6 +287,7 @@ const Brain = {
                     coin: 'USDT',
                     network : 'BSC'
                 })
+                
                 return Response.success('Address fetched.Please pay to it',add);
             }
             catch(e) {
@@ -784,6 +836,7 @@ const strategy = {
         }
     },
     twoStream: async (authClient, symbol, id, _quantity, leverage, quantityPrecision, min) => {
+        let _api = require('@marcius-capital/binance-api');
         var _bot = (await Brain.user.botStatus(id)).data;
         var botStatus = _bot.status;
         var botExpiry = _bot.subExpire;
@@ -831,22 +884,27 @@ const strategy = {
                 var _firstCandles = await getCandles(symbol);
                 var prices = _firstCandles.all.map(o => { return { close: Number(o['close']), time: o['closeTime'] } });
 
+                var _prices = await  _firstCandles.all.map(o => { return Number(o['close'])});
+                var candles = prices;
+                var period = 10;
+                var _ema10 = _EMA({candles, period });
+                period = 50;
+                var _ema50 = _EMA({candles, period });
+
                 let signalFound = false;
                 var sp = symbol.split('USDT');
 
                 var _symbol = `${sp[0]}/USDT`;
                 var lastCandles = _firstCandles.last3Candle;
-                api.stream.kline({ symbol: symbol, interval: config.botTimeFrame }, async (data) => {
+                _api.stream.kline({ symbol: symbol, interval: config.botTimeFrame }, async (data) => {
                     /*
                     test.log(`final? : ${data.kline.final}`);    
                     */
-                    let emaData = await ema(10, "close", "binance", _symbol, "1m", true);
-                    let emaData50 = await ema(50, "close", "binance", _symbol, "1m", true);
+                    var _10 = _ema10.update({close : data.kline['close'] , time : data.kline['closeTime']}).value ;
+                    var _50 = _ema50.update({close : data.kline['close'], time : data.kline['closeTime']}).value ;
 
-                    let _10 = emaData.reverse()[0];
-                    let _50 = emaData50.reverse()[0];
-                    test.log('10::: ', _10);
-                    test.log('50::: ', _50);
+                    //console.log('10::: ', _10);
+                    //console.log('50::: ', _50);
                     var _upSignal, _downSignal;
                     if (_10 == _50) {
                         test.log('equal');
@@ -900,13 +958,14 @@ const strategy = {
                     var resistance = await getResistance(_firstCandles.all);
                     var isBullE = await _candlestick.isBullishEngulfing(last_two);
                     var isBearE = await _candlestick.isBearishEngulfing(last_two);
-                    var _currentClosePrice = Number(last_two[1]['close']).toFixed(quantityPrecision);
+                    var _currentClosePrice = Number(last_two[1]['close']);
                     test.log(isBullE, " : ", isBearE);
-
+                    var ccp = data.kline['close'];
+                    var cct = data.kline['closeTime'];
                     /*qUANTITY*/
                     //console.log(quantityPrecision);
-                    quantity = Number((_quantity / _currentClosePrice)).toFixed(quantityPrecision);
-                    //console.log(quantity)
+                    quantity = Number((_quantity / ccp)).toFixed(quantityPrecision);
+                    console.log(quantity)
                     /*
                     var qt = quantity.toString().split('.');
                     var qt1 = qt[0];
@@ -927,7 +986,7 @@ const strategy = {
                             BotMonitor.log('Second Strategy - BUY', `Bullish Engulfing & GCross found `, id);
                             test.log(supports.last_two);
 
-                            var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'], 2);
+                            var _customId = await Misc.generateOrderId(id, symbol, cct, 2);
 
                             test.log(_customId);
 
@@ -942,14 +1001,21 @@ const strategy = {
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
-                            var newOrder = await authClient.order({
-                                symbol: symbol,
-                                side: _side,
-                                quantity: quantity,
-                                type: 'MARKET',
-                                newClientOrderId: _customId,
-                                positionSide: _positionSide
-                            });
+                            try{
+                                var newOrder = await authClient.order({
+                                    symbol: symbol,
+                                    side: _side,
+                                    quantity: quantity,
+                                    type: 'MARKET',
+                                    newClientOrderId: _customId,
+                                    positionSide: _positionSide
+                                });
+
+                            }
+                            catch(e){
+                                BotMonitor.log('ORDER ERROR',e,id)
+
+                            }
                         }
                     }
                     else if (isBearE && _downSignal && botStatus == true && !isBotExpired) {
@@ -958,7 +1024,7 @@ const strategy = {
                             var _positionSide = 'SHORT';
                             BotMonitor.log('Second Strategy - SELL', `Bearish Engulfing found`, id)
 
-                            var _customId = await Misc.generateOrderId(id, symbol, last_two[1]['closeTime'], 2);
+                            var _customId = await Misc.generateOrderId(id, symbol, cct, 2);
 
                             signalFound = true;
                             var _order = {
@@ -971,14 +1037,19 @@ const strategy = {
                                 positionSide: _positionSide
                             }
                             await Brain.saveOrder(_order);
-                            var newOrder = await authClient.order({
-                                symbol: symbol,
-                                side: _side,
-                                quantity: quantity,
-                                type: 'MARKET',
-                                newClientOrderId: _customId,
-                                positionSide: _positionSide
-                            });
+                            try{
+                                var newOrder = await authClient.order({
+                                    symbol: symbol,
+                                    side: _side,
+                                    quantity: quantity,
+                                    type: 'MARKET',
+                                    newClientOrderId: _customId,
+                                    positionSide: _positionSide
+                                });
+                            }
+                            catch(e){
+                                BotMonitor.log('ORDER ERROR',e,id)
+                            }
                         }
                     }
                     else {
@@ -1023,7 +1094,7 @@ const Bot = {
         //console.log(auth);
         strategy = Number(strategy);
         test.log(strategy);
-        var _req = await User.updateOne({ _uid: id }, { $set: { botStatus: true } });
+        var _req = await User.updateOne({ _uid: id }, { $set: { botStatus: true, currentSymbol : symbol } });
         if (_req) {
             if (strategy == 1) {
                 var init = new strategies(authClient, symbol, id, quantity, leverage, quantityPrecision, min);
@@ -1034,7 +1105,7 @@ const Bot = {
                 var init = new strategies(authClient, symbol, id, quantity, leverage, quantityPrecision, min);
                 init.strategyTwo();
             }
-            BotMonitor.log('BOT STOP', `Bot started successfully on strategy-${strategy}`, id);
+            BotMonitor.log('BOT START', `Bot started successfully on strategy-${strategy}`, id);
             return Response.success(Constants.BOT_START_SUCCESS);
             //console.log(quantity);
             //console.log(strategy,' | ',symbol,' | ',id,' | ',auth,' | ',quantity);

@@ -39,7 +39,10 @@ app.get("/dashboard", RouteControl.auth, RouteControl.page.dashboard);
 app.get("/mini", RouteControl.auth, RouteControl.miniDash);
 app.get("/403", RouteControl.error);
 app.get("/subscribe",RouteControl.auth, RouteControl.page.subscribe);
-app.get("/depositAddress", RouteControl.auth, RouteControl.getDepositAddress)
+app.get("/depositAddress", RouteControl.auth, RouteControl.getDepositAddress);
+app.get("/referandearn", RouteControl.auth, RouteControl.page.referandearn);
+
+app.post("/withdrawRefer", RouteControl.auth, RouteControl.withdrawRefer);
 
 app.post("/paySubscription", RouteControl.auth, RouteControl.pay);
 app.post("/logout", RouteControl.auth, RouteControl.logout);

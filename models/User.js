@@ -11,6 +11,10 @@ var user = new Schema({
     subscribed : {type : Boolean, default : false},
     subTime : {type : Date},
     subType : {type : Number},
-    subExpire : {type : Date}
+    subExpire : {type : Date},
+    referredBy : {type : String},
+    unpaidReferrals : {type : Number},
+    paidReferrals : {type : Number},
+    currentSymbol : {type : String}
 });
 module.exports=mongoose.model("User",user)
