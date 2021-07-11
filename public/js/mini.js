@@ -181,9 +181,11 @@ var notify = (type, msg) => {
         not.remove()
     }, 3000);
 }
+
 document.getElementById('startBot').onsubmit = (async (e) => {
     e.preventDefault();
     console.log('=======startBot========');
+    return true;
     var strategy = document.getElementById('strategy').value;
     var symbol = document.getElementById('symbol').value;
     var leverage = document.getElementById('leverage').value;
