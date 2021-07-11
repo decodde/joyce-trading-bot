@@ -835,6 +835,7 @@ const strategy = {
 
                 var _symbol = `${sp[0]}/USDT`;
                 var lastCandles = _firstCandles.last3Candle;
+                api.stream.close()
                 api.stream.kline({ symbol: symbol, interval: config.botTimeFrame }, async (data) => {
                     /*
                     test.log(`final? : ${data.kline.final}`);    
