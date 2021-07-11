@@ -6,9 +6,16 @@ include top
             h1.h-card.h-bg-purple.h-text-white.h-text-bold Rocket 125x
             br
             div
+                p.h-card-sm.h-bg-white.h-text-red.h-text-bold Notice!! : Server still in maintenance . Please do not start your bots
                 .row.h-bg-white.h-card-sm.h-padding-1
                     div.h-col-3.h-bg-white.h-card-sm
                         button.h-button.h-text.h-bg-lightblue.h-shadow-lightblue.h-text-white.h-card-1.h-font-tiny-2(onclick="switchTo('1')") Set Keys
+                        br
+                        br
+                        button.h-button.h-text.h-bg-lightblue.h-shadow-lightblue.h-text-white.h-card-1.h-font-tiny-2(onclick="switchTo('4')") Agreement
+                        br
+                        br
+                        a.h-button.h-text.h-bg-lightgreen.h-shadow-lightgreen.h-text-white.h-card-1.h-font-tiny-2(href="/referandearn") Refer to Earn
                         br
                         br
                         if data
@@ -114,4 +121,8 @@ include top
                                 else 
                                     h5.h-text-bold.h-margin-0.h-text-red Bot running already
                                     button.h-button.h-bg-red.h-text-white.h-text-bold(onclick="switchTo('2')") STOP
+                                
+                            div#disclaimer.view.h-hide
+                                p.h-text-bold.h-text-center Agreement 
+                                textarea.h-input#agree(disabled, value="")
 script(type="text/javascript",src='/js/mini.js')

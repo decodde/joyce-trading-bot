@@ -6,7 +6,7 @@ const RouteControl = {
             next();
         }
         else {
-            var err = new Error("User not logged in");
+           //var err = new Error("User not logged in");
             res.render("403");
         }
     },
@@ -44,6 +44,11 @@ const RouteControl = {
         //console.log(symbol);
             var _data = await Brain.user.getById(user._uid);
             res.render("subscribe", {data : _data.data});
+        },
+        referandearn : async (req,res) => {
+            var user = req.session.user;
+            var _data = await Brain.user.getById(user._uid);
+            res.render("refer", {data : _data.data});
         }
     },
     login : async (req,res) => {
@@ -85,6 +90,12 @@ const RouteControl = {
         else {
             res.render("signup", { message: trySignup.msg });
         }
+    },
+    withdrawRefer : async (req,res) => {
+        var user = req.session.user;
+        var _data = await Brain.user.getById(user._uid);
+        var withd = await Brain.user.withdrawRefer(_data.data);
+        res.json(withd);
     },
     miniDash : async (req,res) => {
         var user = req.session.user;

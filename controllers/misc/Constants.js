@@ -25,7 +25,8 @@ const Constants = {
     USER_NOT_FOUND : "User not found",
     SUB_SUCCESS : "Payment in progress",
     SUB_FAIL : "Payment failed",
-    INVALID_FIELD : "Fields are invalid"
+    INVALID_FIELD : "Fields are invalid",
+    REFERRAL_CODE_INVALID : "Referral code is invalid"
 }
 
 exports.Constants = Constants;

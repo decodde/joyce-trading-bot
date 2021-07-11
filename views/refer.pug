@@ -1,0 +1,40 @@
+head 
+    link(rel="stylesheet", href="./css/sub.css")
+include top 
+    body.rocket-bg
+        .h-pail.h-card
+            h1.h-card.h-bg-purple.h-text-white.h-text-bold Rocket 125x
+            br
+            div
+                .row.h-bg-white.h-card-sm.h-padding-1
+                    div.h-col-3.h-bg-white.h-card-sm
+                        button.h-button.h-text.h-bg-lightblue.h-shadow-lightblue.h-text-white.h-card-1.h-font-tiny-2(onclick="switchTo('1')") Referral
+                        br
+                        br
+                        a(href="/mini")
+                            button.h-button.h-text.h-bg-purple.h-shadow-purple.h-text-white.h-card-1.h-font-tiny-2 To the Bot
+                        br
+                        br
+                        button.h-button.h-text.h-card-1.h-text-white.h-bg-red.h-shadow-red.h-font-tiny-2(onclick = "logout()") Logout
+
+                .h-card-sm
+                    div.h-dash-left(style="padding-left : 5px")
+                        #referral.view.h-anim-rollin.h-hide.h-card-sm.h-bg-white
+                            if data
+                                h5.h-text-bold.h-margin-0 Referral code: #{data._uid}
+                                i.h-text-green.h-text Ensure the person uses your code when signing up
+                                br
+                                div.h-margin-1
+                                    p.h-text.h-text-pinkish.h-text-left Paid Referrals :  #{data.paidReferrals}
+                                    p.h-margin-0.h-text.h-text-lightgreen.h-text-left Unpaid Referrals :  #{data.unpaidReferrals}
+                                if data.unpaidReferrals > 0
+                                    button.h-button.h-bg-lightgreen(onclick="withdraw()") Withdraw Referral Earnings
+                            else 
+                                h5.h-text-bold.h-margin-0 Referral code: ~
+                                br
+                                div.h-margin-1
+                                    p.h-margin-0.h-text.h-text-pinkish.h-text-left Paid Referrals :  0
+                                    p.h-margin-0.h-text.h-text-lightgreen.h-text-left Unpaid Referrals : 0
+                                
+                            
+script(type="text/javascript",src='/js/refer.js')
