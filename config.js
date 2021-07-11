@@ -21,7 +21,9 @@ const config = {
     oneWeek : 100,
     twoWeek : 180,
     limitDayPay : 2,
-    callbackRate : '0.3'
+    callbackRate : '0.3',
+    tpPercent : 20,
+    slPercent : 8
 }
 //console.log(process.env.API_KEY)
 exports.config = config;

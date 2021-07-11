@@ -22,7 +22,7 @@ include top
                             if data.binanceApiSecret
                                 button.h-button.h-text.h-card-1.h-text-white.h-shadow-lightblue.h-bg-lightblue.h-font-tiny-2(onclick = "switchTo('2')") Start Bot
                             else 
-                                button.h-button.h-text.h-card-1.h-text-white.h-shadow-lightblue.h-bg-lightblue.h-font-tiny-2(disabled,onclick = "notify('e','Api Keys not set')") Start Bot
+                                button.h-button.h-text.h-card-1.h-text-white.h-shadow-lightblue.h-bg-lightblue.h-font-tiny-2(onclick = "notify('e','Api Keys not set')") Start Bot
                             br
                             br
                             if data.botStatus == true
