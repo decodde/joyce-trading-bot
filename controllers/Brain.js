@@ -338,7 +338,7 @@ const Brain = {
                 return Response.error(Constants.USER_NOT_FOUND);
             }
             else {
-                return Response.success(Constants.DATA_RETRIEVE_SUCCESS, { status: _req.botStatus })
+                return Response.success(Constants.DATA_RETRIEVE_SUCCESS, _req)
             }
         },
         botOrder: async (user, data) => {
@@ -839,11 +839,12 @@ const strategy = {
     twoStream: async (authClient, symbol, id, _quantity, leverage, quantityPrecision, min) => {
         let _api = require('@marcius-capital/binance-api');
         var _bot = (await Brain.user.botStatus(id)).data;
-        var botStatus = _bot.status;
+        var botStatus = _bot.botStatus;
         var botExpiry = _bot.subExpire;
         var botType = _bot.subType;
         var currentSym = _bot.currentSymbol;
         var quantity;
+        console.log(botStatus)
         var isBotExpired = await Misc.isBotExpired(botExpiry, botType);
         if (botStatus) {
             authClient.ws.futuresUser(async (x) => {
@@ -851,7 +852,7 @@ const strategy = {
                 if (eventType == 'ORDER_TRADE_UPDATE') {
                     var isStrategyTwo = clientOrderId.includes('rxTwo');
                     var _bot = (await Brain.user.botStatus(id)).data;
-                    var botStatus = _bot.status;
+                    var botStatus = _bot.botStatus;
                     if (orderStatus == 'FILLED' && orderType == 'MARKET' && executionType == 'TRADE' && realizedProfit == '0' && isStrategyTwo && botStatus == true) {
                         test.log("================================================================");
                         test.log('x:: ', x, '\n _____________________');
@@ -859,7 +860,7 @@ const strategy = {
                         var _side;
                         var _orderInfo = await Brain.getOrder(clientOrderId);
                         test.log("Corresponding info ::>> ", _orderInfo);
-                        var { side, customId, quantity } = _orderInfo.data.order;
+                        var { side, customId, quantity,takeProfitPrice, stopLossPrice } = _orderInfo.data.order;
 
                         if (side == 'BUY') {
                             _side = 'SELL';
@@ -876,9 +877,9 @@ const strategy = {
                                 type: 'TAKE_PROFIT',
                                 price: priceLastTrade,
                                 stopPrice: Number(takeProfitPrice),
-                                timeInForce: 'GTC',
+                                timeInForce: 'IOC',
                                 positionSide: positionSide,
-                                newClientOrderId: customId + 'tp'
+                                newClientOrderId:  `${customId}tp`
                             });
                             try {
                                 var slOrder = await authClient.order({
@@ -888,45 +889,63 @@ const strategy = {
                                     type: 'STOP',
                                     price: priceLastTrade,
                                     positionSide: positionSide,
-                                    timeInForce: 'GTC',
-                                    stopPrice: stopLossPrice,
-                                    newClientOrderId: customId + 'sl'
+                                    timeInForce: 'IOC',
+                                    stopPrice: Number(stopLossPrice),
+                                    newClientOrderId:  `${customId}sl`
                                 });
                             }
                             catch (e) {
+                                var cancel = await authClient.futuresCancelOrder({
+                                    symbol: symbol,
+                                    origClientOrderId: customId
+                                });
+                                var cancel2 = await authClient.futuresCancelOrder({
+                                    symbol: symbol,
+                                    origClientOrderId: `${customId}sl`
+                                })
+                                BotMonitor.log("SELL ORDER ERROR",e.message,id);
                                 console.log(e);
-                                console.log("SELL ORDER ERROR ");
                             }
                         }
                         catch (e) {
-                            console.log(e);
-                            console.log("TAKE PROFIT ERROR");
+                            var cancel = await authClient.futuresCancelOrder({
+                                symbol: symbol,
+                                origClientOrderId: customId
+                            })
+                            BotMonitor.log("TAKE ORDER ERROR",e,id);
                         }
-                        test.log(tsOrder);
+                        //test.log(tsOrder);
                     }
                     if (executionType == 'EXPIRED') {
                         var { symbol, orderType, clientOrderId } = x;
                         if (orderType == 'TAKE_PROFIT') {
                             var cl_id = clientOrderId.split("tp")[0];
-                            console.log(cl_id);
+                            
                             var ts_id = `${cl_id}sl`;
-                            console.log(ts_id)
-                            var cancel = await authClient.futuresCancelOrder({
-                                symbol: symbol,
-                                origClientOrderId: ts_id
-                            })
-                            console.log(cancel);
+                            try{
+                                var cancel = await authClient.futuresCancelOrder({
+                                    symbol: symbol,
+                                    origClientOrderId: ts_id
+                                })
+                                BotMonitor.log('TakeProfit Cancel',cl_id,id);
+                            }
+                            catch(e){
+                                BotMonitor.log('TakeProfit Cancel Error',e,`${id}:::${ts_id}`);
+                            }
                         }
                         else if (orderType == 'STOP') {
                             var cl_id = clientOrderId.split("sl")[0];
-                            console.log(cl_id);
                             var tp_id = `${cl_id}tp`;
-                            console.log(tp_id)
-                            var cancel = await authClient.futuresCancelOrder({
-                                symbol: symbol,
-                                origClientOrderId: tp_id
-                            })
-                            console.log(cancel);
+                            try{
+                                var cancel = await authClient.futuresCancelOrder({
+                                    symbol: symbol,
+                                    origClientOrderId: tp_id
+                                })
+                                BotMonitor.log('STOP LOSS Cancel',e,`${id}:::${tp_id}`);
+                            }
+                            catch(e){
+                                BotMonitor.log('STOP LOSS Cancel Error',e,`${id}:::${tp_id}`);
+                            }
                         }
                         else {
                             console.log("-_-")
@@ -972,7 +991,7 @@ const strategy = {
                         crossUp = true;
                         crossDown = false;
                         bought = false;
-                        console.log("10 above 50 now")
+                        console.log("10 above 50 now");
                     }
                     else if (_10 < _50 && crossUp) {
                         crossDownTwo = true;
@@ -980,7 +999,7 @@ const strategy = {
                         crossUp = false;
                         crossDown = true;
                         bought = false;
-                        console.log("10 below 50 now")
+                        console.log("10 below 50 now");
                     }
                     let last_two = lastCandles.slice(-2,);
 
@@ -1006,7 +1025,7 @@ const strategy = {
                         }
 
                         var _bot = (await Brain.user.botStatus(id)).data;
-                        var botStatus = _bot.status;
+                        var botStatus = _bot.botStatus;
                         botExpiry = _bot.subExpire;
                         botType = _bot.subType;
                         isBotExpired = await Misc.isBotExpired(botExpiry, botType);
@@ -1019,10 +1038,10 @@ const strategy = {
                     /*qUANTITY*/
                     //console.log(quantityPrecision);
                     quantity = Number((_quantity / ccp)).toFixed(quantityPrecision);
-                    console.log(quantity)
+                    //console.log(quantity)
 
-                    if (crossDownTwo == true && bought == false && botStatus == true && !isBotExpired) {
-                        if (isBearE) {
+                    if ( botStatus == true && !isBotExpired) {
+                        if (isBearE && crossDownTwo == true && bought == false ) {
                             console.log("....Lets sell ......");
                             bought = true;
                             console.log(leverage);
@@ -1067,10 +1086,12 @@ const strategy = {
                             console.log(`\n - \n - \n - \n We should SELL \n - \n - \n - \n TakeProfit : ${tp} \n StopLoss : ${sl} \n ++++++++++++++++`);
                         }
                     }
-                    if (crossUpTwo == true && bought == false) {
-                        if (isBullE && botStatus == true && !isBotExpired) {
+                    if (botStatus == true && !isBotExpired) {
+                        if (isBullE && crossUpTwo == true && bought == false ) {
                             console.log("......Lets buy....");
                             bought = true;
+                            _side = 'BUY';
+                            _positionSide = 'LONG';
                             var tp = Math.abs(Number((config.tpPercent * ccp) / (100 * leverage)) + Number(ccp)).toFixed(3);
                             var sl = Math.abs(Number((config.slPercent * ccp) / (100 * leverage)) - Number(ccp)).toFixed(3);
                             BotMonitor.log('Second Strategy - BUY', `Bullish Engulfing & GCross found `, id);
@@ -1111,8 +1132,11 @@ const strategy = {
 
                         }
                     }
+                    else {
+                        BotMonitor.log("STRATEGY CHECK","2",id)
+                    }
                 })
-                resolve(data);
+                resolve();
             })
         }
         else {

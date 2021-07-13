@@ -213,7 +213,6 @@ document.getElementById('startBot').onsubmit = (async (e) => {
             notify('s','Bot started');
         }
         else {
-            console.log()
             notify('e',_req.msg);
         }
     }

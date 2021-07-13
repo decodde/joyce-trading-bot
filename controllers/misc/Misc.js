@@ -45,6 +45,7 @@ const Misc = {
     generateOrderId: async (id, symbol, t, num) => {
         t ? t = t : t = new Date().getUTCMilliseconds();
         var strat = "rx";
+        var rd = Math.round((Math.random() * 36 ** 4)).toString(36);
         if (num == 1) {
             strat = `${strat}One`;
         }
@@ -54,7 +55,7 @@ const Misc = {
         else {
             strat = `${strat}Three`
         }
-        return `${strat}${id}${t}`;
+        return `${strat}${id}${t}_${rd}`;
 
     },
     isBotExpired: async (_d, subType) => {

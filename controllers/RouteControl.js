@@ -52,6 +52,7 @@ const RouteControl = {
         }
     },
     login : async (req,res) => {
+        var {username,password} = req.body;
         let tryLogin = await Brain.login(req.body);
         //console.log(tryLogin);
         if (tryLogin.type == "success") {

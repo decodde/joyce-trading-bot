@@ -23,7 +23,7 @@ const config = {
     limitDayPay : 2,
     callbackRate : '0.3',
     tpPercent : 20,
-    slPercent : 8
+    slPercent : 9
 }
 //console.log(process.env.API_KEY)
 exports.config = config;

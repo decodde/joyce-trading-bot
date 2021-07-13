@@ -56,5 +56,11 @@ var updateFields = async () => {
     var _req = await User.updateMany({},{$set: fields});
     console.log(_req);
 }
+
+var killBots = async () => {
+    var all = await User.updateMany({},{$set:{botStatus : false}});
+    console.log(all);
+}
+
 //unlimitedAccess();
-updateFields();
+//updateFields();

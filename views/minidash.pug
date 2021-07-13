@@ -2,7 +2,7 @@ head
     link(rel="stylesheet", href="./css/mini.css")
 include top 
     body.rocket-bg
-        .h-pail-center.h-card.h-bg-pinkish
+        .h-center.h-card.h-bg-pinkish
             h1.h-card.h-bg-purple.h-text-white.h-text-bold Rocket 125x
             br
             div
@@ -91,7 +91,9 @@ include top
                                     p.h-margin-0.h-text-bold.h-text-lightblue.h-text-left Select symbol
                                     select#symbol.h-input.h-outline-lightblue(name="symbol",onchange="symbolInfo()") 
                                         for symbol in symbols.data
-                                            option(value=`${symbol.pair}`) #{symbol.pair}
+                                            if symbol.pair.includes('BTC')
+                                            else
+                                                option(value=`${symbol.pair}`) #{symbol.pair}
                                         
                                 .h-margin-1 
                                     span.h-margin-0.h-text-bold.h-text-lightblue.h-left Quantity
